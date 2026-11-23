@@ -10,8 +10,9 @@
     if (typeof text === 'number' && Number.isFinite(text)) return text;
     if (!text) return '';
     const str = String(text).trim();
-    if (/zu verschenken/i.test(str)) return 0;
-    const match = str.match(/(\d{1,3}(?:\.\d{3})+,\d{1,2}|\d+,\d{1,2}|\d{1,3}(?:\.\d{3})+|\d+(?:\.\d{1,2})?)/);
+    if (/^(zu verschenken|gratuit|free|gratis)$/i.test(str) || /zu verschenken/i.test(str)) return 0;
+    const normalized = str.replace(/(\d)[\u00a0\u202f ]+(?=\d{3}(?:[^\d]|$))/g, '$1');
+    const match = normalized.match(/(\d{1,3}(?:\.\d{3})+,\d{1,2}|\d+,\d{1,2}|\d{1,3}(?:\.\d{3})+|\d+(?:\.\d{1,2})?)/);
     if (!match) return '';
     let token = match[1];
     if (token.includes(',')) token = token.replace(/\./g, '').replace(',', '.');

@@ -53,7 +53,11 @@ export const MESSAGES = {
     captureDeleteLabel: 'Beim Löschen einer Kleinanzeigen-Anzeige fragen, ob sie verkauft wurde',
     jsonBackupBtn: 'JSON Backup speichern',
     jsonImportBtn: 'JSON importieren',
-    clearAllBtn: 'Alle Daten löschen'
+    clearAllBtn: 'Alle Daten löschen',
+    salesDac7: 'Verkäufe (DAC7)',
+    revenueDac7: 'Umsatz (DAC7)',
+    yes: 'Ja',
+    no: 'Nein'
   },
   en: {
     subtitle: 'EU DAC7 & Private Resale Tracker',
@@ -91,7 +95,11 @@ export const MESSAGES = {
     captureDeleteLabel: 'Ask when deleting a Kleinanzeigen ad if it was sold',
     jsonBackupBtn: 'Save JSON backup',
     jsonImportBtn: 'Import JSON',
-    clearAllBtn: 'Delete all data'
+    clearAllBtn: 'Delete all data',
+    salesDac7: 'Sales (DAC7)',
+    revenueDac7: 'Revenue (DAC7)',
+    yes: 'Yes',
+    no: 'No'
   }
 };
 

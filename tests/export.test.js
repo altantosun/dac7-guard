@@ -37,13 +37,13 @@ test('buildCsv neutralizes Excel formula injection in text fields but keeps nega
       buyPrice: 50,
       paymentMethod: 'cash',
       reportable: false,
-      note: '+SUM(A1:A2)'
+      note: ' +SUM(A1:A2)'
     }
   ];
 
   const csv = buildCsv(sales, 2026);
   assert.ok(csv.includes(`"'=CMD|""/C calc""!A0"`));
-  assert.ok(csv.includes("'+SUM(A1:A2)"));
+  assert.ok(csv.includes("' +SUM(A1:A2)"));
   assert.ok(csv.includes(';10,00;50,00;-40,00;'));
 });
 

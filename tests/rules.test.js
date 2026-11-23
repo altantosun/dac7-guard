@@ -11,12 +11,16 @@ import {
   parseGermanPrice
 } from '../src/shared/rules.js';
 
-test('parseGermanPrice parses German formats, VB, and Zu verschenken', () => {
+test('parseGermanPrice parses EU formats (DE, FR space/NBSP), VB, and free items', () => {
   assert.equal(parseGermanPrice('120 €'), 120);
   assert.equal(parseGermanPrice('1.250,50 € VB'), 1250.5);
+  assert.equal(parseGermanPrice('1 250,50 €'), 1250.5);
+  assert.equal(parseGermanPrice('1\u00a0250 €'), 1250);
   assert.equal(parseGermanPrice('45,99 EUR'), 45.99);
   assert.equal(parseGermanPrice('1.200 €'), 1200);
   assert.equal(parseGermanPrice('Zu verschenken'), 0);
+  assert.equal(parseGermanPrice('Gratuit'), 0);
+  assert.equal(parseGermanPrice('Free'), 0);
   assert.equal(parseGermanPrice('VB'), null);
   assert.equal(parseGermanPrice(''), null);
 });

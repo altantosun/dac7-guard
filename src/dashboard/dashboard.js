@@ -80,25 +80,27 @@ function populateYears() {
     .join('');
 }
 
-function statusLabel(status) {
-  if (status === 'exceeded') return 'Meldegrenze erreicht';
-  if (status === 'warning') return 'Achtung';
-  return 'OK';
+function statusLabel(status, lang) {
+  if (status === 'exceeded') return t('exceeded', lang);
+  if (status === 'warning') return t('warnShort', lang);
+  return t('okShort', lang);
 }
 
-function populatePlatformSelects() {
+function populatePlatformSelects(lang = 'de') {
+  const prevFilter = els.platformFilter.value || 'all';
   const optionsHtml = Object.values(PLATFORMS)
     .map((p) => `<option value="${p.id}">${p.name}</option>`)
     .join('');
 
-  els.platformFilter.innerHTML = `<option value="all">Alle Plattformen</option>${optionsHtml}`;
+  els.platformFilter.innerHTML = `<option value="all">${t('allPlatforms', lang)}</option>${optionsHtml}`;
+  els.platformFilter.value = prevFilter;
   const addPlatformSelect = els.addForm.querySelector('select[name="platform"]');
-  if (addPlatformSelect) {
+  if (addPlatformSelect && addPlatformSelect.options.length !== Object.keys(PLATFORMS).length) {
     addPlatformSelect.innerHTML = optionsHtml;
   }
 }
 
-function renderPlatformCards() {
+function renderPlatformCards(lang) {
   const warnRatio = state.settings?.warningRatio ?? 0.8;
   els.platformCards.innerHTML = '';
 
@@ -113,14 +115,23 @@ function renderPlatformCards() {
     const stats = calculatePlatformStats(state.sales, state.year, p.id, warnRatio);
     const card = document.createElement('article');
     card.className = 'card';
+    const subText =
+      stats.nonReportableCount > 0
+        ? lang === 'en'
+          ? `+ ${stats.nonReportableCount} private (${formatEur(stats.nonReportableRevenue)})`
+          : `+ ${stats.nonReportableCount} privat (${formatEur(stats.nonReportableRevenue)})`
+        : lang === 'en'
+          ? `${stats.remainingTx} sales / ${formatEur(stats.remainingRevenue)} remaining`
+          : `Noch ${stats.remainingTx} Verkäufe / ${formatEur(stats.remainingRevenue)} Luft`;
+
     card.innerHTML = `
       <div class="p-head">
         <h3>${p.name}</h3>
-        <span class="badge ${stats.status}">${statusLabel(stats.status)}</span>
+        <span class="badge ${stats.status}">${statusLabel(stats.status, lang)}</span>
       </div>
       <div>
         <div class="metric-row">
-          <span>Verkäufe (DAC7)</span>
+          <span>${t('salesDac7', lang)}</span>
           <strong>${stats.reportableCount} / ${DAC7_MAX_TRANSACTIONS}</strong>
         </div>
         <div class="bar">
@@ -129,35 +140,39 @@ function renderPlatformCards() {
       </div>
       <div>
         <div class="metric-row">
-          <span>Umsatz (DAC7)</span>
+          <span>${t('revenueDac7', lang)}</span>
           <strong>${formatEur(stats.reportableRevenue)} / ${formatEur(DAC7_MAX_REVENUE_EUR)}</strong>
         </div>
         <div class="bar">
           <div class="bar-fill ${stats.reportableRevenue > DAC7_MAX_REVENUE_EUR ? 'exceeded' : stats.revenueProgressPct >= warnRatio * 100 ? 'warning' : ''}" style="width:${stats.revenueProgressPct}%"></div>
         </div>
       </div>
-      <div class="sub">
-        ${stats.nonReportableCount > 0 ? `+ ${stats.nonReportableCount} privat (${formatEur(stats.nonReportableRevenue)})` : `Noch ${stats.remainingTx} Verkäufe / ${formatEur(stats.remainingRevenue)} Luft`}
-      </div>
+      <div class="sub">${subText}</div>
     `;
     els.platformCards.appendChild(card);
   }
 }
 
-function renderTaxSummary() {
+function renderTaxSummary(lang) {
   const warnRatio = state.settings?.warningRatio ?? 0.8;
   const tax = calculateTaxSummary(state.sales, state.year, warnRatio);
 
   els.totalRev.textContent = formatEur(tax.totalRevenue);
-  els.totalCount.textContent = `${tax.totalSalesCount} Verkäufe im Jahr ${state.year}`;
+  els.totalCount.textContent =
+    lang === 'en'
+      ? `${tax.totalSalesCount} sales in ${state.year}`
+      : `${tax.totalSalesCount} Verkäufe im Jahr ${state.year}`;
   els.netProfit.textContent = `${tax.netProfitLoss > 0 ? '+' : ''}${formatEur(tax.netProfitLoss)}`;
-  els.costCoverage.textContent = `${tax.itemsWithCost} von ${tax.totalSalesCount} Artikeln mit Einkaufspreis`;
+  els.costCoverage.textContent =
+    lang === 'en'
+      ? `${tax.itemsWithCost} of ${tax.totalSalesCount} items with purchase price`
+      : `${tax.itemsWithCost} von ${tax.totalSalesCount} Artikeln mit Einkaufspreis`;
   els.shortTermProfit.textContent = `${formatEur(tax.taxableShortTermProfit)} / ${formatEur(ESTG_PROFIT_EXEMPTION_EUR)}`;
   els.estgBar.style.width = `${tax.profitProgressPct}%`;
   els.estgBar.className = `bar-fill ${tax.status === 'ok' ? '' : tax.status}`;
 }
 
-function renderTable() {
+function renderTable(lang) {
   let list = filterSalesByYear(state.sales, state.year);
   if (state.platformFilter !== 'all') {
     list = list.filter((s) => s.platform === state.platformFilter);
@@ -176,7 +191,7 @@ function renderTable() {
 
   if (list.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="8" style="text-align:center;color:#64748b;padding:24px;">Keine Verkäufe für diese Auswahl gefunden.</td>`;
+    tr.innerHTML = `<td colspan="8" style="text-align:center;color:#64748b;padding:24px;">${t('noSalesYet', lang)}</td>`;
     els.salesBody.appendChild(tr);
     return;
   }
@@ -202,18 +217,18 @@ function renderTable() {
         ${diff !== null ? `${diff > 0 ? '+' : ''}${formatEur(diff)}` : '–'}
       </td>
       <td>
-        <span class="badge ${reportable ? 'warning' : 'ok'}">${reportable ? 'Ja' : 'Nein'}</span>
+        <span class="badge ${reportable ? 'warning' : 'ok'}">${reportable ? t('yes', lang) : t('no', lang)}</span>
       </td>
       <td class="no-print action-cell">
-        <button class="edit-btn" title="Bearbeiten">✎</button>
-        <button class="del-btn" title="Löschen">×</button>
+        <button class="edit-btn" title="Edit">✎</button>
+        <button class="del-btn" title="Delete">×</button>
       </td>
     `;
 
     tr.querySelector('.title-cell').textContent = sale.title;
     const flags = [pmName];
-    if (sale.isEverydayItem !== false) flags.push('Hausrat');
-    if (sale.heldUnderOneYear) flags.push('< 1 Jahr');
+    if (sale.isEverydayItem !== false) flags.push(lang === 'en' ? 'Household' : 'Hausrat');
+    if (sale.heldUnderOneYear) flags.push(lang === 'en' ? '< 1 year' : '< 1 Jahr');
     if (sale.note) flags.push(sale.note);
     tr.querySelector('.note-line').textContent = flags.join(' • ');
 
@@ -235,11 +250,12 @@ function renderTable() {
 function render() {
   const lang = detectLocale(state.settings?.language || 'auto');
   applyI18n(document, lang);
+  populatePlatformSelects(lang);
   els.printYear.textContent = String(state.year);
   els.printDate.textContent = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : 'de-DE');
-  renderPlatformCards();
-  renderTaxSummary();
-  renderTable();
+  renderPlatformCards(lang);
+  renderTaxSummary(lang);
+  renderTable(lang);
 }
 
 function resetAddForm() {

@@ -6,8 +6,8 @@ import { PAYMENT_METHODS, PLATFORMS, filterSalesByYear, isSaleReportable } from 
 
 function escapeCsvCell(value, { isNumeric = false } = {}) {
   let str = value === null || value === undefined ? '' : String(value);
-  // Prevent CSV formula injection (DDE / Excel) on non-numeric text cells
-  if (!isNumeric && /^[=+\-@\t\r]/.test(str)) {
+  // Prevent CSV formula injection (DDE / Excel) on non-numeric text cells, even with leading spaces
+  if (!isNumeric && /^\s*[=+\-@\t\r]/.test(str)) {
     str = `'${str}`;
   }
   if (/[;"\r\n]/.test(str)) {

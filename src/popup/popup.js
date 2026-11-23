@@ -105,7 +105,10 @@ function render() {
   els.revBar.className = `bar-fill ${stats.reportableRevenue > DAC7_MAX_REVENUE_EUR ? 'exceeded' : stats.revenueProgressPct >= warningRatio * 100 ? 'warning' : ''}`;
 
   if (stats.nonReportableCount > 0) {
-    els.nonReportableNote.textContent = `Zusätzlich ${stats.nonReportableCount} nicht-meldepflichtige Verkäufe (${formatEur(stats.nonReportableRevenue)} Bar/PayPal/Überweisung) erfasst.`;
+    els.nonReportableNote.textContent =
+      lang === 'en'
+        ? `+ ${stats.nonReportableCount} non-reportable private sales (${formatEur(stats.nonReportableRevenue)} cash/PayPal/bank).`
+        : `Zusätzlich ${stats.nonReportableCount} nicht-meldepflichtige Verkäufe (${formatEur(stats.nonReportableRevenue)} Bar/PayPal/Überweisung) erfasst.`;
   } else {
     els.nonReportableNote.textContent = platformMeta.hint;
   }
@@ -123,7 +126,10 @@ function render() {
   if (platformSales.length === 0) {
     const empty = document.createElement('li');
     empty.className = 'empty';
-    empty.textContent = `Noch keine ${platformMeta.name}-Verkäufe für ${state.year} erfasst.`;
+    empty.textContent =
+      lang === 'en'
+        ? `No ${platformMeta.name} sales recorded for ${state.year} yet.`
+        : `Noch keine ${platformMeta.name}-Verkäufe für ${state.year} erfasst.`;
     els.recentList.appendChild(empty);
   } else {
     for (const sale of platformSales) {

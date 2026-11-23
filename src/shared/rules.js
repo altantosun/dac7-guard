@@ -89,7 +89,7 @@ export const PAYMENT_METHODS = {
 };
 
 /**
- * Parses German/European price strings like "1.250,50 € VB", "45 €", "19.99 EUR", "VB", "Zu verschenken".
+ * Parses EU price strings like "1.250,50 € VB", "1 250,50 €", "45 €", "19.99 EUR", "VB", "Zu verschenken", "Gratuit", "Free".
  * Returns a non-negative number (rounded to 2 decimals) or null if no numeric price exists.
  */
 export function parseGermanPrice(input) {
@@ -100,15 +100,20 @@ export function parseGermanPrice(input) {
 
   const trimmed = input.trim();
   if (!trimmed) return null;
-  if (/zu verschenken/i.test(trimmed)) return 0;
+  if (/^(zu verschenken|gratuit|free|gratis)$/i.test(trimmed) || /zu verschenken/i.test(trimmed)) {
+    return 0;
+  }
+
+  // Normalize non-breaking / narrow spaces used as thousand separators (FR/PL/SE: "1 250,50 €")
+  const normalized = trimmed.replace(/(\d)[\u00a0\u202f ]+(?=\d{3}(?:[^\d]|$))/g, '$1');
 
   // Match first numeric token with optional thousand separators and decimals
-  const match = trimmed.match(/(\d{1,3}(?:\.\d{3})+,\d{1,2}|\d+,\d{1,2}|\d{1,3}(?:\.\d{3})+|\d+(?:\.\d{1,2})?)/);
+  const match = normalized.match(/(\d{1,3}(?:\.\d{3})+,\d{1,2}|\d+,\d{1,2}|\d{1,3}(?:\.\d{3})+|\d+(?:\.\d{1,2})?)/);
   if (!match) return null;
 
   let token = match[1];
   if (token.includes(',')) {
-    // German format: 1.234,56 -> 1234.56
+    // European format: 1.234,56 -> 1234.56
     token = token.replace(/\./g, '').replace(',', '.');
   } else if (/^\d{1,3}(\.\d{3})+$/.test(token)) {
     // Thousand dots without decimals: 1.200 -> 1200
