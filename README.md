@@ -77,6 +77,7 @@ DAC7 applies across the entire EU — PRs for additional country adapters and tr
 
 - [x] **i18n (`DE` + `EN`):** Automatic browser language detection + manual switcher in Dashboard settings *(community PRs for FR, ES, IT, NL, PL welcome!)*
 - [x] **Firefox Add-on packaging:** `npm run pack:firefox` builds MV3 Firefox ZIP with `browser_specific_settings.gecko`
+- [ ] **Chrome Web Store & Firefox AMO submission:** Ready to publish (`dist/dac7-guard-v0.2.0.zip` + Privacy Policy) — will be submitted as soon as we gather enough community feedback and real-world selector validation across marketplaces. *(Leave feedback or upvote via [GitHub Issues](https://github.com/altantosun/dac7-guard/issues)!)*
 - [ ] **Multi-currency support:** Automatic EUR reference conversion for non-Euro EU states (PLN, SEK, CZK, DKK, HUF, RON)
 - [ ] **Receipt/Photo attachment:** Store compressed local receipt thumbnails in IndexedDB for tax proof
 
