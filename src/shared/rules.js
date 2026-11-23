@@ -28,14 +28,56 @@ export const PLATFORMS = {
     name: 'Vinted',
     color: '#007782',
     defaultReportable: true,
-    hint: 'Verkäufe über das Vinted-System zählen zur DAC7-Grenze (30 Verkäufe oder 2.000 €).'
+    hint: 'Verkäufe über das Vinted-System zählen zur DAC7-Grenze (30 Verkäufe oder > 2.000 €).'
+  },
+  willhaben: {
+    id: 'willhaben',
+    name: 'Willhaben',
+    color: '#009fe3',
+    defaultReportable: false,
+    hint: 'Bei Willhaben (AT) zählen i. d. R. nur PayLivery-Transaktionen zur DPMG / DAC7-Meldegrenze.'
+  },
+  leboncoin: {
+    id: 'leboncoin',
+    name: 'Leboncoin',
+    color: '#ff6e14',
+    defaultReportable: false,
+    hint: 'On Leboncoin (FR), online payments (Paiement sécurisé) count toward EU DAC7 reporting.'
+  },
+  marktplaats: {
+    id: 'marktplaats',
+    name: 'Marktplaats',
+    color: '#f59e0b',
+    defaultReportable: false,
+    hint: 'On Marktplaats (NL) & 2dehands (BE), platform payment requests count toward EU DAC7.'
+  },
+  wallapop: {
+    id: 'wallapop',
+    name: 'Wallapop',
+    color: '#13c1ac',
+    defaultReportable: true,
+    hint: 'Wallapop Shipping transactions count toward the EU DAC7 reporting limit.'
+  },
+  subito: {
+    id: 'subito',
+    name: 'Subito.it',
+    color: '#f9423a',
+    defaultReportable: false,
+    hint: 'On Subito.it (IT), TuttoSubito transactions count toward the EU DAC7 reporting limit.'
+  },
+  etsy: {
+    id: 'etsy',
+    name: 'Etsy',
+    color: '#f1641e',
+    defaultReportable: true,
+    hint: 'All Etsy orders are processed via the platform and count toward EU DAC7 limits.'
   },
   other: {
     id: 'other',
     name: 'Sonstige',
     color: '#6366f1',
     defaultReportable: true,
-    hint: 'Weitere Plattformen (z. B. Etsy, momox, rebuy, Nebenan).'
+    hint: 'Weitere Plattformen (z. B. momox, rebuy, Vestiaire Collective, Depop, OLX).'
   }
 };
 

@@ -2,6 +2,15 @@
 
 All notable changes to **DAC7 Guard** will be documented in this file.
 
+## [0.2.0] - 2026-11-23
+
+### Added
+- Pan-EU multi-TLD support for **eBay** (`.de`, `.at`, `.fr`, `.it`, `.es`, `.nl`, `.be`, `.ie`, `.pl`) and **Vinted** (`.de`, `.fr`, `.it`, `.es`, `.nl`, `.pl`, `.be`, `.at`, `.pt`).
+- Unified EU marketplace adapter (`src/content/eu-marketplaces.js`) for **Willhaben (AT)**, **Leboncoin (FR)**, **Marktplaats (NL)**, **2dehands/2ememain (BE)**, **Wallapop (ES/IT/PT)**, **Subito.it (IT)**, and **Etsy (EU)**.
+- Lightweight DE/EN i18n helper (`src/shared/i18n.js`) with browser auto-detection and Dashboard language switcher.
+- Firefox MV3 Add-on packager (`npm run pack:firefox`).
+- Dynamic platform dropdowns & smart active-platform card grid in Dashboard.
+
 ## [0.1.0] - 2026-11-23
 
 ### Added

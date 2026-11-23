@@ -11,7 +11,8 @@ const STORAGE_KEY_SETTINGS = 'dac7_guard_settings_v1';
 export const DEFAULT_SETTINGS = {
   warningRatio: DEFAULT_WARNING_RATIO,
   showFloatingPill: true,
-  captureDeletePrompt: true
+  captureDeletePrompt: true,
+  language: 'auto'
 };
 
 function generateId() {

@@ -97,9 +97,11 @@ body {
 }
 
 .tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
 }
 
 .tab {
@@ -107,11 +109,13 @@ body {
   background: var(--card);
   color: var(--muted);
   border-radius: 8px;
-  padding: 6px 4px;
+  padding: 6px 10px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 

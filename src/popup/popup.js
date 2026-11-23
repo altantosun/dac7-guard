@@ -12,6 +12,7 @@ import {
 } from '../shared/rules.js';
 import { addSale, deleteSale, getSales, getSettings } from '../shared/storage.js';
 import { buildCsv, triggerDownload } from '../shared/export.js';
+import { detectLocale, t } from '../shared/i18n.js';
 
 const state = {
   sales: [],
@@ -65,7 +66,7 @@ function renderTabs() {
       state.platform = p.id;
       const pmSelect = els.quickAddForm.querySelector('select[name="paymentMethod"]');
       if (pmSelect) {
-        pmSelect.value = p.id === 'kleinanzeigen' ? 'cash' : 'platform';
+        pmSelect.value = p.defaultReportable ? 'platform' : 'cash';
       }
       render();
     });
@@ -73,24 +74,26 @@ function renderTabs() {
   }
 }
 
-function statusText(status) {
-  if (status === 'exceeded') return 'Meldegrenze erreicht';
-  if (status === 'warning') return 'Achtung (>80 %)';
-  return 'Unter Grenze';
+function statusText(status, lang) {
+  if (status === 'exceeded') return t('exceeded', lang);
+  if (status === 'warning') return t('warning', lang);
+  return t('underLimit', lang);
 }
 
 function render() {
   renderTabs();
 
+  const lang = detectLocale(state.settings?.language || 'auto');
   const warningRatio = state.settings?.warningRatio ?? 0.8;
   const platformMeta = PLATFORMS[state.platform];
   const stats = calculatePlatformStats(state.sales, state.year, state.platform, warningRatio);
   const tax = calculateTaxSummary(state.sales, state.year, warningRatio);
 
   els.platformTitle.textContent = platformMeta.name;
-  els.platformSub.textContent = `Kalenderjahr ${state.year} • DAC7 / PStTG`;
-  els.statusBadge.textContent = statusText(stats.status);
+  els.platformSub.textContent = `${state.year} • EU DAC7 / PStTG`;
+  els.statusBadge.textContent = statusText(stats.status, lang);
   els.statusBadge.className = `badge ${stats.status}`;
+  els.toggleAddBtn.textContent = t('quickAddBtn', lang);
 
   els.txLabel.textContent = `${stats.reportableCount} / ${DAC7_MAX_TRANSACTIONS}`;
   els.txBar.style.width = `${stats.txProgressPct}%`;

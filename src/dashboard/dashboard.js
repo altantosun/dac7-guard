@@ -57,6 +57,7 @@ const els = {
   csvBtn: document.getElementById('csvBtn'),
   printBtn: document.getElementById('printBtn'),
   warnThresholdInput: document.getElementById('warnThresholdInput'),
+  langSelect: document.getElementById('langSelect'),
   showPillCheck: document.getElementById('showPillCheck'),
   captureDeleteCheck: document.getElementById('captureDeleteCheck'),
   jsonExportBtn: document.getElementById('jsonExportBtn'),
@@ -84,11 +85,30 @@ function statusLabel(status) {
   return 'OK';
 }
 
+function populatePlatformSelects() {
+  const optionsHtml = Object.values(PLATFORMS)
+    .map((p) => `<option value="${p.id}">${p.name}</option>`)
+    .join('');
+
+  els.platformFilter.innerHTML = `<option value="all">Alle Plattformen</option>${optionsHtml}`;
+  const addPlatformSelect = els.addForm.querySelector('select[name="platform"]');
+  if (addPlatformSelect) {
+    addPlatformSelect.innerHTML = optionsHtml;
+  }
+}
+
 function renderPlatformCards() {
   const warnRatio = state.settings?.warningRatio ?? 0.8;
   els.platformCards.innerHTML = '';
 
+  const yearSales = filterSalesByYear(state.sales, state.year);
+  const activePlatformIds = new Set(['kleinanzeigen', 'ebay', 'vinted']);
+  for (const s of yearSales) {
+    if (PLATFORMS[s.platform]) activePlatformIds.add(s.platform);
+  }
+
   for (const p of Object.values(PLATFORMS)) {
+    if (!activePlatformIds.has(p.id)) continue;
     const stats = calculatePlatformStats(state.sales, state.year, p.id, warnRatio);
     const card = document.createElement('article');
     card.className = 'card';
@@ -265,18 +285,22 @@ async function init() {
   state.settings = settings;
 
   els.warnThresholdInput.value = String(Math.round((settings.warningRatio ?? 0.8) * 100));
+  if (els.langSelect) els.langSelect.value = settings.language || 'auto';
   els.showPillCheck.checked = settings.showFloatingPill !== false;
   els.captureDeleteCheck.checked = settings.captureDeletePrompt !== false;
 
+  populatePlatformSelects();
   const dateInput = els.addForm.querySelector('input[name="date"]');
   if (dateInput) dateInput.value = getTodayIso();
   const addPlatformSelect = els.addForm.querySelector('select[name="platform"]');
   const addPaymentSelect = els.addForm.querySelector('select[name="paymentMethod"]');
   if (addPlatformSelect && addPaymentSelect) {
-    addPaymentSelect.value = addPlatformSelect.value === 'kleinanzeigen' ? 'cash' : 'platform';
-    addPlatformSelect.addEventListener('change', () => {
-      addPaymentSelect.value = addPlatformSelect.value === 'kleinanzeigen' ? 'cash' : 'platform';
-    });
+    const syncPayment = () => {
+      const meta = PLATFORMS[addPlatformSelect.value];
+      addPaymentSelect.value = meta && meta.defaultReportable ? 'platform' : 'cash';
+    };
+    syncPayment();
+    addPlatformSelect.addEventListener('change', syncPayment);
   }
 
   populateYears();
@@ -352,6 +376,7 @@ async function init() {
     const pct = Math.min(99, Math.max(50, Number(els.warnThresholdInput.value) || 80));
     state.settings = await saveSettings({
       warningRatio: pct / 100,
+      language: els.langSelect ? els.langSelect.value : 'auto',
       showFloatingPill: els.showPillCheck.checked,
       captureDeletePrompt: els.captureDeleteCheck.checked
     });
@@ -360,6 +385,7 @@ async function init() {
   };
 
   els.warnThresholdInput.addEventListener('change', persistSettings);
+  if (els.langSelect) els.langSelect.addEventListener('change', persistSettings);
   els.showPillCheck.addEventListener('change', persistSettings);
   els.captureDeleteCheck.addEventListener('change', persistSettings);
 

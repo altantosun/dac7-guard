@@ -61,24 +61,23 @@ DAC7 applies across the entire EU — PRs for additional country adapters and tr
 | Region | Marketplace | Status | Notes / Adapter |
 |---|---|---|---|
 | 🇩🇪 Germany | **Kleinanzeigen** (`kleinanzeigen.de`) | ✅ Supported | Auto-prefill, delete prompt, order scanner, *Sicher bezahlen* vs. cash |
-| 🇩🇪 / 🇪🇺 EU | **eBay** (`ebay.de`, expand to `.fr`, `.it`, `.es`, `.nl`, `.at`) | 🟡 DE live / ⬜ EU domains | Add multi-TLD `matches` in `manifest.json` |
-| 🇩🇪 / 🇪🇺 EU | **Vinted** (`vinted.de`, expand to `.fr`, `.it`, `.es`, `.nl`, `.pl`, `.be`) | 🟡 DE live / ⬜ EU domains | Add multi-TLD `matches` in `manifest.json` |
-| 🇦🇹 Austria | **Willhaben** (`willhaben.at`) | ⬜ TODO | *PayLivery* (reportable) vs. cash pickup |
-| 🇫🇷 France | **Leboncoin** (`leboncoin.fr`) | ⬜ TODO | *Paiement sécurisé* vs. in-person cash |
-| 🇪🇸 Spain / 🇮🇹 Italy | **Wallapop** (`wallapop.com`) | ⬜ TODO | Wallapop Shipping vs. local meetup |
-| 🇮🇹 Italy | **Subito.it** (`subito.it`) | ⬜ TODO | *TuttoSubito* vs. local pickup |
-| 🇳🇱 Netherlands | **Marktplaats** (`marktplaats.nl`) | ⬜ TODO | *Betaalverzoek / Kopersbescherming* vs. cash |
-| 🇧🇪 Belgium | **2dehands / 2ememain** (`2dehands.be`) | ⬜ TODO | Same platform family as Marktplaats |
+| 🇪🇺 Pan-EU | **eBay** (`.de`, `.at`, `.fr`, `.it`, `.es`, `.nl`, `.be`, `.ie`, `.pl`) | ✅ Supported | Multi-TLD seller hub orders adapter |
+| 🇪🇺 Pan-EU | **Vinted** (`.de`, `.fr`, `.it`, `.es`, `.nl`, `.pl`, `.be`, `.at`, `.pt`) | ✅ Supported | Multi-TLD orders & member adapter |
+| 🇦🇹 Austria | **Willhaben** (`willhaben.at`) | ✅ Supported | Auto-prefill, *PayLivery* (reportable) vs. cash pickup |
+| 🇫🇷 France | **Leboncoin** (`leboncoin.fr`) | ✅ Supported | Auto-prefill, *Paiement sécurisé* vs. in-person cash |
+| 🇳🇱 NL / 🇧🇪 BE | **Marktplaats / 2dehands / 2ememain** | ✅ Supported | Auto-prefill, *Betaalverzoek* vs. cash |
+| 🇪🇸 ES / 🇮🇹 IT / 🇵🇹 PT | **Wallapop** (`wallapop.com`) | ✅ Supported | Auto-prefill, Wallapop Shipping vs. local meetup |
+| 🇮🇹 Italy | **Subito.it** (`subito.it`) | ✅ Supported | Auto-prefill, *TuttoSubito* vs. local pickup |
+| 🇪🇺 Pan-EU | **Etsy** (`etsy.com`) | ✅ Supported | Seller orders adapter |
 | 🇵🇱 Poland | **OLX / Allegro Lokalnie** (`olx.pl`, `allegrolokalnie.pl`) | ⬜ TODO | Platform payment vs. cash |
 | 🇸🇪 Sweden | **Blocket / Tradera** (`blocket.se`, `tradera.com`) | ⬜ TODO | SEK → EUR conversion helper needed |
-| 🇪🇺 Pan-EU | **Etsy** (`etsy.com`) | ⬜ TODO | Seller orders page adapter |
 | 🇪🇺 Pan-EU | **Vestiaire Collective / Depop** | ⬜ TODO | Fashion resale adapters |
 
 ### Core & UX TODOs
 
-- [ ] **i18n (`_locales/`):** English UI alongside German (and community translations: FR, ES, IT, NL, PL)
+- [x] **i18n (`DE` + `EN`):** Automatic browser language detection + manual switcher in Dashboard settings *(community PRs for FR, ES, IT, NL, PL welcome!)*
+- [x] **Firefox Add-on packaging:** `npm run pack:firefox` builds MV3 Firefox ZIP with `browser_specific_settings.gecko`
 - [ ] **Multi-currency support:** Automatic EUR reference conversion for non-Euro EU states (PLN, SEK, CZK, DKK, HUF, RON)
-- [ ] **Firefox Add-on packaging:** Add `browser_specific_settings.gecko` manifest support
 - [ ] **Receipt/Photo attachment:** Store compressed local receipt thumbnails in IndexedDB for tax proof
 
 ---
