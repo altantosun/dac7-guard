@@ -3,7 +3,7 @@
   "name": "DAC7 Guard – Verkaufs- & PStTG-Tracker",
   "short_name": "DAC7 Guard",
   "version": "0.1.0",
-  "description": "Behalte deine DAC7 / PStTG-Meldegrenzen (30 Verkäufe / 2.000 €) und § 23 EStG Gewinne auf Kleinanzeigen, eBay & Vinted im Blick – 100 % lokal & Open Source.",
+  "description": "Tracke deine DAC7 / PStTG-Meldegrenzen (30 Verkäufe / 2.000 €) & § 23 EStG auf Kleinanzeigen, eBay & Vinted – 100 % lokal.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
