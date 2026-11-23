@@ -17,8 +17,10 @@ function escapeCsvCell(value, { isNumeric = false } = {}) {
 }
 
 function formatNumberDe(num) {
-  if (num === null || num === undefined || Number.isNaN(Number(num))) return '';
-  return Number(num).toFixed(2).replace('.', ',');
+  if (num === null || num === undefined || !Number.isFinite(Number(num))) return '';
+  const rounded = Math.round(Number(num) * 100) / 100;
+  const safe = Object.is(rounded, -0) ? 0 : rounded;
+  return safe.toFixed(2).replace('.', ',');
 }
 
 /**

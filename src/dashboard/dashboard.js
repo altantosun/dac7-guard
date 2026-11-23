@@ -237,7 +237,11 @@ function renderTable(lang) {
     });
 
     tr.querySelector('.del-btn').addEventListener('click', async () => {
-      if (!window.confirm(`Verkauf „${sale.title}“ wirklich löschen?`)) return;
+      const msg =
+        lang === 'en'
+          ? `Really delete sale "${sale.title}"?`
+          : `Verkauf „${sale.title}“ wirklich löschen?`;
+      if (!window.confirm(msg)) return;
       if (state.editingId === sale.id) resetAddForm();
       state.sales = await deleteSale(sale.id);
       render();
@@ -400,7 +404,8 @@ async function init() {
       captureDeletePrompt: els.captureDeleteCheck.checked
     });
     render();
-    showMsg('Einstellungen gespeichert.');
+    const curLang = detectLocale(state.settings?.language || 'auto');
+    showMsg(t('settingsSaved', curLang));
   };
 
   els.warnThresholdInput.addEventListener('change', persistSettings);

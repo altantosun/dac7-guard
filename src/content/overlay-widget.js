@@ -276,6 +276,7 @@
 
     let currentStats = null;
     let pillDismissed = false;
+    let activeModalCleanup = null;
 
     function showToast(text) {
       const existing = shadow.querySelector('.toast');
@@ -360,6 +361,10 @@
     }
 
     function openCaptureModal(prefill = {}) {
+      if (activeModalCleanup) {
+        activeModalCleanup();
+        activeModalCleanup = null;
+      }
       const existing = shadow.querySelector('.backdrop');
       if (existing) existing.remove();
 
@@ -449,7 +454,9 @@
       const close = () => {
         document.removeEventListener('keydown', onKeyDown);
         backdrop.remove();
+        if (activeModalCleanup === close) activeModalCleanup = null;
       };
+      activeModalCleanup = close;
       document.addEventListener('keydown', onKeyDown);
       backdrop.querySelectorAll('[data-close]').forEach((btn) => btn.addEventListener('click', close));
       backdrop.addEventListener('click', (e) => {

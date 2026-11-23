@@ -548,7 +548,11 @@
         const rPct = Math.min(100, Math.round((rev / 2000) * 100));
 
         cOut.textContent = `${count} / 30`;
-        rOut.textContent = `${rev.toLocaleString('de-DE')} € / 2.000 €`;
+        const locale = lang === 'en' ? 'en-US' : 'de-DE';
+        rOut.textContent =
+          lang === 'en'
+            ? `€${rev.toLocaleString(locale)} / €2,000`
+            : `${rev.toLocaleString(locale)} € / 2.000 €`;
         cBar.style.width = `${isPlatform ? cPct : 0}%`;
         rBar.style.width = `${isPlatform ? rPct : 0}%`;
 
