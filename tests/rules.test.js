@@ -11,11 +11,13 @@ import {
   parseGermanPrice
 } from '../src/shared/rules.js';
 
-test('parseGermanPrice parses EU formats (DE, FR space/NBSP), VB, and free items', () => {
+test('parseGermanPrice parses EU & EN formats (DE, FR space/NBSP, EN comma-thousands), VB, and free items', () => {
   assert.equal(parseGermanPrice('120 €'), 120);
   assert.equal(parseGermanPrice('1.250,50 € VB'), 1250.5);
   assert.equal(parseGermanPrice('1 250,50 €'), 1250.5);
   assert.equal(parseGermanPrice('1\u00a0250 €'), 1250);
+  assert.equal(parseGermanPrice('€1,250.50'), 1250.5);
+  assert.equal(parseGermanPrice('€1,200'), 1200);
   assert.equal(parseGermanPrice('45,99 EUR'), 45.99);
   assert.equal(parseGermanPrice('1.200 €'), 1200);
   assert.equal(parseGermanPrice('Zu verschenken'), 0);
@@ -98,4 +100,32 @@ test('computeOverallBadge picks worst platform status', () => {
   const badge = computeOverallBadge(sales, 2026);
   assert.equal(badge.status, 'exceeded');
   assert.equal(badge.text, 'DAC7');
+});
+
+test('fuzz invariants: 500 randomized sales never produce NaN, negative remainders, or >100% bars', () => {
+  const platforms = ['kleinanzeigen', 'ebay', 'vinted', 'willhaben', 'leboncoin', 'etsy'];
+  const sales = Array.from({ length: 500 }, (_, i) => ({
+    platform: platforms[i % platforms.length],
+    date: `2026-${String((i % 12) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`,
+    sellPrice: (i * 17.37) % 900,
+    buyPrice: i % 3 === 0 ? null : (i * 19.13) % 1000,
+    reportable: i % 2 === 0,
+    isEverydayItem: i % 4 !== 0,
+    heldUnderOneYear: i % 5 === 0
+  }));
+
+  for (const p of platforms) {
+    const stats = calculatePlatformStats(sales, 2026, p);
+    assert.ok(Number.isFinite(stats.reportableRevenue));
+    assert.ok(stats.remainingTx >= 0);
+    assert.ok(stats.remainingRevenue >= 0);
+    assert.ok(stats.txProgressPct >= 0 && stats.txProgressPct <= 100);
+    assert.ok(stats.revenueProgressPct >= 0 && stats.revenueProgressPct <= 100);
+  }
+
+  const tax = calculateTaxSummary(sales, 2026);
+  assert.ok(Number.isFinite(tax.totalRevenue));
+  assert.ok(tax.taxableShortTermProfit >= 0);
+  assert.ok(tax.remainingExemption >= 0);
+  assert.ok(tax.profitProgressPct >= 0 && tax.profitProgressPct <= 100);
 });

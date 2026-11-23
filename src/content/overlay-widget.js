@@ -12,10 +12,13 @@
     const str = String(text).trim();
     if (/^(zu verschenken|gratuit|free|gratis)$/i.test(str) || /zu verschenken/i.test(str)) return 0;
     const normalized = str.replace(/(\d)[\u00a0\u202f ]+(?=\d{3}(?:[^\d]|$))/g, '$1');
-    const match = normalized.match(/(\d{1,3}(?:\.\d{3})+,\d{1,2}|\d+,\d{1,2}|\d{1,3}(?:\.\d{3})+|\d+(?:\.\d{1,2})?)/);
+    const match = normalized.match(
+      /(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d{1,3}(?:\.\d{3})+,\d{1,2}|\d+,\d{1,2}|\d{1,3}(?:\.\d{3})+|\d+(?:\.\d{1,2})?)/
+    );
     if (!match) return '';
     let token = match[1];
-    if (token.includes(',')) token = token.replace(/\./g, '').replace(',', '.');
+    if (/^\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?$/.test(token)) token = token.replace(/,/g, '');
+    else if (token.includes(',')) token = token.replace(/\./g, '').replace(',', '.');
     else if (/^\d{1,3}(\.\d{3})+$/.test(token)) token = token.replace(/\./g, '');
     const val = Number.parseFloat(token);
     return Number.isFinite(val) ? Math.round(val * 100) / 100 : '';
