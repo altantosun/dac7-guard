@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DAC7 Guard – Kostenloser EU DAC7 &amp; Kleinanzeigen Finanzamt Tracker</title>
+    <meta
+      name="description"
+      content="Open-Source Chrome &amp; Firefox Extension zum lokalen Tracking der EU-DAC7-/PStTG-Meldegrenzen (30 Verkäufe / über 2.000 €) auf Kleinanzeigen, eBay, Vinted, Willhaben &amp; Leboncoin. 100 % lokal &amp; kostenlos."
+    />
+    <meta property="og:title" content="DAC7 Guard – 100 % lokaler EU DAC7 &amp; PStTG Tracker" />
+    <meta
+      property="og:description"
+      content="Behalte die 30-Verkäufe- &amp; 2.000-€-Meldegrenze auf Kleinanzeigen, eBay, Vinted &amp; Co. lokal im Blick. Open Source, Zero Dependencies."
+    />
+    <meta property="og:image" content="https://altantosun.github.io/dac7-guard/assets/showcase-1280x800.png" />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/png" href="./assets/icon128.png" />
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --ink: #0f172a;
+        --muted: #475569;
+        --border: #e2e8f0;
+        --card: #ffffff;
+        --green: #16a34a;
+        --green-bright: #22c55e;
+        --amber: #d97706;
+        --red: #dc2626;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.55;
+      }
+      a { color: var(--green); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+      /* Navbar */
+      header {
+        background: #0f172a;
+        color: #ffffff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 62px;
+        gap: 16px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 17px;
+      }
+      .brand img { width: 28px; height: 28px; border-radius: 6px; }
+      .nav-links { display: flex; align-items: center; gap: 16px; font-size: 14px; }
+      .nav-links a { color: #cbd5e1; font-weight: 500; }
+      .nav-links a:hover { color: #ffffff; text-decoration: none; }
+      .lang-btn {
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 7px;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      /* Hero */
+      .hero {
+        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        color: #ffffff;
+        padding: 56px 0 68px;
+        text-align: center;
+      }
+      .pill {
+        display: inline-block;
+        background: rgba(34, 197, 94, 0.14);
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        color: #86efac;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 999px;
+        margin-bottom: 16px;
+      }
+      .hero h1 {
+        margin: 0 auto 14px;
+        max-width: 780px;
+        font-size: clamp(28px, 4.2vw, 44px);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+      }
+      .hero p {
+        margin: 0 auto 28px;
+        max-width: 660px;
+        color: #cbd5e1;
+        font-size: 17px;
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 38px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .btn:hover { text-decoration: none; transform: translateY(-1px); }
+      .btn-primary { background: var(--green-bright); color: #052e16; }
+      .btn-secondary { background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); }
+      .showcase {
+        max-width: 900px;
+        width: 100%;
+        border-radius: 16px;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+      }
+
+      /* Sections */
+      section { padding: 56px 0; }
+      h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        letter-spacing: -0.015em;
+      }
+      .section-sub {
+        margin: 0 0 28px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      /* Interactive DAC7 Calculator */
+      .calc-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 26px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+      @media (max-width: 760px) { .calc-card { grid-template-columns: 1fr; } }
+      .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+      .field label { font-weight: 600; font-size: 13px; color: #334155; }
+      .field input, .field select {
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        font-size: 15px;
+        background: #f8fafc;
+      }
+      .result-box {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .status-pill {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 13px;
+        width: fit-content;
+      }
+      .status-pill.ok { background: #dcfce7; color: #166534; }
+      .status-pill.warning { background: #fef3c7; color: #92400e; }
+      .status-pill.exceeded { background: #fee2e2; color: #991b1b; }
+      .bar { height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 5px; }
+      .bar-fill { height: 100%; background: var(--green); transition: width 0.2s ease; }
+      .bar-fill.warning { background: var(--amber); }
+      .bar-fill.exceeded { background: var(--red); }
+      .metric-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+
+      /* Grids */
+      .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+      }
+      .card h3 { margin: 0 0 8px; font-size: 16px; }
+      .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+      .badges { display: flex; flex-wrap: wrap; gap: 10px; }
+      .mp-badge {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      /* FAQ */
+      details {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 10px;
+      }
+      summary { font-weight: 700; cursor: pointer; font-size: 15px; }
+      details p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+
+      footer {
+        border-top: 1px solid var(--border);
+        background: #ffffff;
+        padding: 28px 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .foot-inner {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap nav">
+        <a class="brand" href="#">
+          <img src="./assets/icon128.png" alt="DAC7 Guard Logo" />
+          <span>DAC7 Guard</span>
+        </a>
+        <nav class="nav-links">
+          <a href="#calculator" data-i18n="navCalc">DAC7-Rechner</a>
+          <a href="#features" data-i18n="navFeatures">Features</a>
+          <a href="#faq" data-i18n="navFaq">FAQ</a>
+          <a href="https://github.com/altantosun/dac7-guard" target="_blank" rel="noopener">GitHub</a>
+          <button id="langToggle" class="lang-btn">EN</button>
+        </nav>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div class="wrap">
+        <span class="pill" data-i18n="heroPill">100 % Lokal • Zero Dependencies • Open Source (MIT)</span>
+        <h1 data-i18n="heroTitle">Behalte deine EU DAC7- &amp; Finanzamt-Grenzen lokal im Blick</h1>
+        <p data-i18n="heroSub">
+          Kostenlose Browser-Extension für Kleinanzeigen, eBay, Vinted, Willhaben, Leboncoin &amp; Co. Tracke die 30-Verkäufe- und 2.000-€-Grenze ohne Cloud, ohne Account und ohne Tracking.
+        </p>
+        <div class="cta-row">
+          <a
+            class="btn btn-primary"
+            href="https://github.com/altantosun/dac7-guard/releases/latest"
+            target="_blank"
+            rel="noopener"
+            data-i18n="ctaChrome"
+          >
+            ⬇ Download für Chrome / Brave / Edge
+          </a>
+          <a
+            class="btn btn-secondary"
+            href="https://github.com/altantosun/dac7-guard/releases/latest"
+            target="_blank"
+            rel="noopener"
+            data-i18n="ctaFirefox"
+          >
+            🦊 Firefox Add-on (ZIP)
+          </a>
+          <a
+            class="btn btn-secondary"
+            href="https://github.com/altantosun/dac7-guard"
+            target="_blank"
+            rel="noopener"
+            data-i18n="ctaGithub"
+          >
+            Quellcode auf GitHub
+          </a>
+        </div>
+        <img
+          class="showcase"
+          src="./assets/showcase-1280x800.png"
+          alt="DAC7 Guard Dashboard und Extension Popup Vorschau"
+        />
+      </div>
+    </div>
+
+    <main class="wrap">
+      <!-- Interactive DAC7 Quick Calculator -->
+      <section id="calculator">
+        <h2 data-i18n="calcHeading">Interaktiver EU DAC7 / PStTG-Schnellcheck</h2>
+        <p class="section-sub" data-i18n="calcSub">
+          Prüfe sofort, ob eine Plattform deine Verkäufe dieses Jahr ans Finanzamt melden muss (gilt in allen 27 EU-Ländern).
+        </p>
+        <div class="calc-card">
+          <div>
+            <div class="field">
+              <label for="calcCount" data-i18n="calcCountLbl">Anzahl Verkäufe auf einer Plattform (dieses Jahr)</label>
+              <input type="number" id="calcCount" min="0" max="999" value="12" />
+            </div>
+            <div class="field">
+              <label for="calcRev" data-i18n="calcRevLbl">Brutto-Verkaufsumsatz auf dieser Plattform (€)</label>
+              <input type="number" id="calcRev" min="0" step="10" value="840" />
+            </div>
+            <div class="field">
+              <label for="calcPayment" data-i18n="calcPayLbl">Zahlungsweg</label>
+              <select id="calcPayment">
+                <option value="platform" data-i18n="optPlatform">Plattform-System (z. B. eBay, Vinted, Kleinanzeigen „Sicher bezahlen“)</option>
+                <option value="cash" data-i18n="optCash">Barzahlung / PayPal privat / Überweisung (z. B. Kleinanzeigen Abholung)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="result-box">
+            <div>
+              <span id="calcBadge" class="status-pill ok">Unter der Meldegrenze</span>
+              <p id="calcText" style="margin: 10px 0 0; font-size: 14px; color: #334155;"></p>
+            </div>
+            <div>
+              <div class="metric-row">
+                <span data-i18n="calcSalesBar">Verkäufe</span>
+                <span id="calcCountOut">12 / 30</span>
+              </div>
+              <div class="bar"><div id="calcCountBar" class="bar-fill" style="width: 40%;"></div></div>
+              <div class="metric-row" style="margin-top: 12px;">
+                <span data-i18n="calcRevBar">Umsatz</span>
+                <span id="calcRevOut">840 € / 2.000 €</span>
+              </div>
+              <div class="bar"><div id="calcRevBarEl" class="bar-fill" style="width: 42%;"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" style="padding-top: 16px;">
+        <h2 data-i18n="featHeading">Warum DAC7 Guard?</h2>
+        <p class="section-sub" data-i18n="featSub">
+          Gebaut für Privatverkäufer, die ihre Daten nicht in irgendeine Cloud hochladen wollen.
+        </p>
+        <div class="grid-3">
+          <div class="card">
+            <h3 data-i18n="f1t">🛡️ 100 % Lokal &amp; Privat</h3>
+            <p data-i18n="f1d">Alle Verkäufe bleiben in chrome.storage.local. Keine Server, keine Accounts, keine Analytics, nur die storage-Permission.</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="f2t">⚡ Auto-Prefill auf Marktplätzen</h3>
+            <p data-i18n="f2d">Erkennt Titel, Preis und Inserats-ID direkt auf deiner Anzeige und fragt beim Löschen, ob der Artikel verkauft wurde.</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="f3t">📊 Finanzamt-Nachweis-Export</h3>
+            <p data-i18n="f3d">Ein Klick für Excel-kompatibles CSV, druckfertiges PDF für die Steuerakte und vollständiges JSON-Backup.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Supported Marketplaces -->
+      <section style="padding-top: 16px;">
+        <h2 data-i18n="mpHeading">Unterstützte EU-Marktplätze</h2>
+        <p class="section-sub" data-i18n="mpSub">
+          Multi-TLD Support quer durch Europa — weitere Plattformen lassen sich in ~50 Zeilen JS als PR ergänzen.
+        </p>
+        <div class="badges">
+          <span class="mp-badge">🇩🇪 Kleinanzeigen</span>
+          <span class="mp-badge">🇪🇺 eBay (DE/AT/FR/IT/ES/NL/BE/IE/PL)</span>
+          <span class="mp-badge">🇪🇺 Vinted (9 EU-Domains)</span>
+          <span class="mp-badge">🇦🇹 Willhaben</span>
+          <span class="mp-badge">🇫🇷 Leboncoin</span>
+          <span class="mp-badge">🇳🇱 Marktplaats &amp; 🇧🇪 2dehands</span>
+          <span class="mp-badge">🇪🇸 Wallapop</span>
+          <span class="mp-badge">🇮🇹 Subito.it</span>
+          <span class="mp-badge">🇪🇺 Etsy</span>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" style="padding-top: 16px;">
+        <h2 data-i18n="faqHeading">Häufige Fragen (DAC7 / PStTG)</h2>
+        <details open>
+          <summary data-i18n="q1">Ab wann melden Kleinanzeigen, eBay &amp; Vinted ans Finanzamt?</summary>
+          <p data-i18n="a1">Nach EU-Richtlinie DAC7 (in Deutschland PStTG § 4 Abs. 5) melden Plattformen Verkäufer pro Kalenderjahr und pro Plattform, sobald mindestens 30 Transaktionen ODER mehr als 2.000,00 € Bruttoerlös erreicht werden.</p>
+        </details>
+        <details>
+          <summary data-i18n="q2">Muss ich bei einer Meldung automatisch Steuern zahlen?</summary>
+          <p data-i18n="a2">Nein. Der private Verkauf von gebrauchtem Hausrat (Kleidung, Möbel, altes Smartphone) unter dem ursprünglichen Einkaufspreis ist steuerfrei. Erst bei kurzfristigen Verkäufen mit Gewinn innerhalb eines Jahres greift in Deutschland die 1.000-€-Freigrenze (§ 23 EStG).</p>
+        </details>
+        <details>
+          <summary data-i18n="q3">Werden meine Verkaufsdaten irgendwohin übertragen?</summary>
+          <p data-i18n="a3">Nein. DAC7 Guard besitzt keine Server, keine externen Abhängigkeiten und sendet null Netzwerk-Requests. Der gesamte Code ist öffentlich unter der MIT-Lizenz auf GitHub einsehbar.</p>
+        </details>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap foot-inner">
+        <span>© 2026 DAC7 Guard (MIT License) • <span data-i18n="disclaimer">Keine Rechts- oder Steuerberatung.</span></span>
+        <div style="display: flex; gap: 16px;">
+          <a href="./privacy.html" data-i18n="privacyLink">Datenschutz / Privacy Policy</a>
+          <a href="https://github.com/altantosun/dac7-guard" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/altantosun/dac7-guard/releases" target="_blank" rel="noopener">Releases</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const I18N = {
+        de: {
+          navCalc: 'DAC7-Rechner',
+          navFeatures: 'Features',
+          navFaq: 'FAQ',
+          heroPill: '100 % Lokal • Zero Dependencies • Open Source (MIT)',
+          heroTitle: 'Behalte deine EU DAC7- & Finanzamt-Grenzen lokal im Blick',
+          heroSub: 'Kostenlose Browser-Extension für Kleinanzeigen, eBay, Vinted, Willhaben, Leboncoin & Co. Tracke die 30-Verkäufe- und 2.000-€-Grenze ohne Cloud, ohne Account und ohne Tracking.',
+          ctaChrome: '⬇ Download für Chrome / Brave / Edge',
+          ctaFirefox: '🦊 Firefox Add-on (ZIP)',
+          ctaGithub: 'Quellcode auf GitHub',
+          calcHeading: 'Interaktiver EU DAC7 / PStTG-Schnellcheck',
+          calcSub: 'Prüfe sofort, ob eine Plattform deine Verkäufe dieses Jahr ans Finanzamt melden muss (gilt in allen 27 EU-Ländern).',
+          calcCountLbl: 'Anzahl Verkäufe auf einer Plattform (dieses Jahr)',
+          calcRevLbl: 'Brutto-Verkaufsumsatz auf dieser Plattform (€)',
+          calcPayLbl: 'Zahlungsweg',
+          optPlatform: 'Plattform-System (z. B. eBay, Vinted, Kleinanzeigen „Sicher bezahlen“)',
+          optCash: 'Barzahlung / PayPal privat / Überweisung (z. B. Kleinanzeigen Abholung)',
+          calcSalesBar: 'Verkäufe',
+          calcRevBar: 'Umsatz',
+          featHeading: 'Warum DAC7 Guard?',
+          featSub: 'Gebaut für Privatverkäufer, die ihre Daten nicht in irgendeine Cloud hochladen wollen.',
+          f1t: '🛡️ 100 % Lokal & Privat',
+          f1d: 'Alle Verkäufe bleiben in chrome.storage.local. Keine Server, keine Accounts, keine Analytics, nur die storage-Permission.',
+          f2t: '⚡ Auto-Prefill auf Marktplätzen',
+          f2d: 'Erkennt Titel, Preis und Inserats-ID direkt auf deiner Anzeige und fragt beim Löschen, ob der Artikel verkauft wurde.',
+          f3t: '📊 Finanzamt-Nachweis-Export',
+          f3d: 'Ein Klick für Excel-kompatibles CSV, druckfertiges PDF für die Steuerakte und vollständiges JSON-Backup.',
+          mpHeading: 'Unterstützte EU-Marktplätze',
+          mpSub: 'Multi-TLD Support quer durch Europa — weitere Plattformen lassen sich in ~50 Zeilen JS als PR ergänzen.',
+          faqHeading: 'Häufige Fragen (DAC7 / PStTG)',
+          q1: 'Ab wann melden Kleinanzeigen, eBay & Vinted ans Finanzamt?',
+          a1: 'Nach EU-Richtlinie DAC7 (in Deutschland PStTG § 4 Abs. 5) melden Plattformen Verkäufer pro Kalenderjahr und pro Plattform, sobald mindestens 30 Transaktionen ODER mehr als 2.000,00 € Bruttoerlös erreicht werden.',
+          q2: 'Muss ich bei einer Meldung automatisch Steuern zahlen?',
+          a2: 'Nein. Der private Verkauf von gebrauchtem Hausrat (Kleidung, Möbel, altes Smartphone) unter dem ursprünglichen Einkaufspreis ist steuerfrei. Erst bei kurzfristigen Verkäufen mit Gewinn innerhalb eines Jahres greift in Deutschland die 1.000-€-Freigrenze (§ 23 EStG).',
+          q3: 'Werden meine Verkaufsdaten irgendwohin übertragen?',
+          a3: 'Nein. DAC7 Guard besitzt keine Server, keine externen Abhängigkeiten und sendet null Netzwerk-Requests. Der gesamte Code ist öffentlich unter der MIT-Lizenz auf GitHub einsehbar.',
+          disclaimer: 'Keine Rechts- oder Steuerberatung.',
+          privacyLink: 'Datenschutz / Privacy Policy'
+        },
+        en: {
+          navCalc: 'DAC7 Calculator',
+          navFeatures: 'Features',
+          navFaq: 'FAQ',
+          heroPill: '100% Local • Zero Dependencies • Open Source (MIT)',
+          heroTitle: 'Track your EU DAC7 marketplace limits locally & privately',
+          heroSub: 'Free open-source browser extension for Kleinanzeigen, eBay, Vinted, Willhaben, Leboncoin & more. Monitor the 30-sales and €2,000 limits with zero cloud, zero accounts, and zero tracking.',
+          ctaChrome: '⬇ Download for Chrome / Brave / Edge',
+          ctaFirefox: '🦊 Firefox Add-on (ZIP)',
+          ctaGithub: 'View Source on GitHub',
+          calcHeading: 'Interactive EU DAC7 Quick-Check',
+          calcSub: 'Instantly check whether a marketplace has to report your sales this calendar year (applies across all 27 EU member states).',
+          calcCountLbl: 'Number of sales on one platform (this year)',
+          calcRevLbl: 'Gross revenue on this platform (€)',
+          calcPayLbl: 'Payment method',
+          optPlatform: 'Platform payment system (e.g. eBay, Vinted, PayLivery, Sicher bezahlen)',
+          optCash: 'Cash pickup / private bank transfer / private PayPal',
+          calcSalesBar: 'Sales',
+          calcRevBar: 'Revenue',
+          featHeading: 'Why DAC7 Guard?',
+          featSub: 'Built for private sellers who refuse to upload their personal sales history to third-party servers.',
+          f1t: '🛡️ 100% Local & Private',
+          f1d: 'All data stays in chrome.storage.local. Zero servers, zero accounts, zero analytics, storage-only permission.',
+          f2t: '⚡ Auto-Prefill on Marketplaces',
+          f2d: 'Reads title, price, and listing ID directly on supported listing pages and prompts when marking an item sold.',
+          f3t: '📊 Tax-Proof Exports',
+          f3d: 'One-click Excel-compatible CSV export, printable PDF report, and full JSON backup/restore.',
+          mpHeading: 'Supported EU Marketplaces',
+          mpSub: 'Multi-TLD support across Europe — new country adapters take ~50 lines of JS via PR.',
+          faqHeading: 'Frequently Asked Questions (EU DAC7)',
+          q1: 'When do eBay, Vinted, Kleinanzeigen & Co. report sellers?',
+          a1: 'Under EU Directive 2021/514 (DAC7), platforms report sellers per calendar year and per platform once you reach 30 or more transactions OR more than €2,000.00 in gross revenue.',
+          q2: 'Does being reported automatically mean I owe taxes?',
+          a2: 'No. Selling personal used household items at a loss is generally tax-free across the EU. Keeping local records of original purchase prices helps prove this if tax authorities ever ask.',
+          q3: 'Is any of my sales data sent to a server?',
+          a3: 'Never. DAC7 Guard has zero servers, zero runtime dependencies, and makes zero network requests. The entire codebase is auditable under the MIT license on GitHub.',
+          disclaimer: 'Not legal or tax advice.',
+          privacyLink: 'Privacy Policy'
+        }
+      };
+
+      let lang = (navigator.language || 'de').toLowerCase().startsWith('de') ? 'de' : 'en';
+      const langBtn = document.getElementById('langToggle');
+      const countEl = document.getElementById('calcCount');
+      const revEl = document.getElementById('calcRev');
+      const payEl = document.getElementById('calcPayment');
+
+      function applyLang() {
+        document.documentElement.lang = lang;
+        langBtn.textContent = lang === 'de' ? 'EN' : 'DE';
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+          const k = el.getAttribute('data-i18n');
+          if (I18N[lang][k]) el.textContent = I18N[lang][k];
+        });
+        updateCalc();
+      }
+
+      function updateCalc() {
+        const count = Math.max(0, Number(countEl.value) || 0);
+        const rev = Math.max(0, Number(revEl.value) || 0);
+        const isPlatform = payEl.value === 'platform';
+
+        const badge = document.getElementById('calcBadge');
+        const text = document.getElementById('calcText');
+        const cOut = document.getElementById('calcCountOut');
+        const rOut = document.getElementById('calcRevOut');
+        const cBar = document.getElementById('calcCountBar');
+        const rBar = document.getElementById('calcRevBarEl');
+
+        const cPct = Math.min(100, Math.round((count / 30) * 100));
+        const rPct = Math.min(100, Math.round((rev / 2000) * 100));
+
+        cOut.textContent = `${count} / 30`;
+        rOut.textContent = `${rev.toLocaleString('de-DE')} € / 2.000 €`;
+        cBar.style.width = `${isPlatform ? cPct : 0}%`;
+        rBar.style.width = `${isPlatform ? rPct : 0}%`;
+
+        if (!isPlatform) {
+          badge.className = 'status-pill ok';
+          cBar.className = 'bar-fill';
+          rBar.className = 'bar-fill';
+          badge.textContent = lang === 'de' ? 'Nicht meldepflichtig (privat)' : 'Not platform-reported (private)';
+          text.textContent =
+            lang === 'de'
+              ? 'Verkäufe außerhalb des Plattform-Bezahlsystems (z. B. Bar bei Abholung) werden von der Plattform i. d. R. nicht nach DAC7 gemeldet.'
+              : 'Off-platform payments (e.g. cash on pickup) are typically not reported by the platform under DAC7.';
+          return;
+        }
+
+        const exceeded = count >= 30 || rev > 2000;
+        const warning = !exceeded && (cPct >= 80 || rPct >= 80);
+        const cls = exceeded ? 'exceeded' : warning ? 'warning' : 'ok';
+
+        badge.className = `status-pill ${cls}`;
+        cBar.className = `bar-fill ${count >= 30 ? 'exceeded' : cPct >= 80 ? 'warning' : ''}`;
+        rBar.className = `bar-fill ${rev > 2000 ? 'exceeded' : rPct >= 80 ? 'warning' : ''}`;
+
+        if (exceeded) {
+          badge.textContent = lang === 'de' ? 'DAC7-Meldegrenze erreicht' : 'DAC7 reporting limit reached';
+          text.textContent =
+            lang === 'de'
+              ? 'Die Plattform muss deine Verkäufe für dieses Jahr melden. Wichtig: Meldung ≠ Steuer! Halte deine Kaufpreise mit DAC7 Guard fest.'
+              : 'The platform must report your sales for this year. Remember: reporting ≠ owing taxes — keep records of your original purchase prices.';
+        } else if (warning) {
+          badge.textContent = lang === 'de' ? 'Achtung (> 80 % erreicht)' : 'Warning (> 80% reached)';
+          text.textContent =
+            lang === 'de'
+              ? `Du bist nah an der Grenze (noch ${Math.max(0, 30 - count)} Verkäufe / ${Math.max(0, 2000 - rev).toLocaleString('de-DE')} € Luft).`
+              : `You are close to the limit (${Math.max(0, 30 - count)} sales / €${Math.max(0, 2000 - rev).toLocaleString('en-US')} remaining).`;
+        } else {
+          badge.textContent = lang === 'de' ? 'Unter der Meldegrenze' : 'Under reporting limit';
+          text.textContent =
+            lang === 'de'
+              ? `Alles im grünen Bereich: noch ${30 - count} Verkäufe und ${(2000 - rev).toLocaleString('de-DE')} € Luft auf dieser Plattform.`
+              : `You are safely under the limit: ${30 - count} sales and €${(2000 - rev).toLocaleString('en-US')} remaining on this platform.`;
+        }
+      }
+
+      langBtn.addEventListener('click', () => {
+        lang = lang === 'de' ? 'en' : 'de';
+        applyLang();
+      });
+      countEl.addEventListener('input', updateCalc);
+      revEl.addEventListener('input', updateCalc);
+      payEl.addEventListener('change', updateCalc);
+
+      applyLang();
+    </script>
+  </body>
+</html>
