@@ -4,6 +4,8 @@
 
 > **100 % lokal • Zero Dependencies • Keine Server • Kein Tracking • MIT-Lizenz**
 
+![DAC7 Guard Dashboard & Popup Vorschau](./assets/showcase-1280x800.png)
+
 ---
 
 ## Warum DAC7 Guard?
