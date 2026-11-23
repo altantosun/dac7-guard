@@ -30,14 +30,19 @@
       null;
 
     const titleEl =
-      card.querySelector('h1, h2 a, h2, .text-module-begin a, .aditem-main--middle--title, [data-testid="ad-title"]') ||
+      card.querySelector('#viewad-title, h1, h2 a, h2, .text-module-begin a, .aditem-main--middle--title, [data-testid="ad-title"]') ||
       document.querySelector('#viewad-title, h1');
 
     const priceEl =
-      card.querySelector('.aditem-main--middle--price-shipping--price, .manageaditem-price, [data-testid="ad-price"], #viewad-price') ||
+      card.querySelector('#viewad-price, .aditem-main--middle--price-shipping--price, .manageaditem-price, [data-testid="ad-price"]') ||
       document.querySelector('#viewad-price');
 
-    const title = titleEl ? titleEl.textContent.trim().replace(/\s+/g, ' ') : '';
+    const title = titleEl
+      ? titleEl.textContent
+          .replace(/\s+/g, ' ')
+          .replace(/^(Reserviert|Gelöscht)\s*[•·-]?\s*/i, '')
+          .trim()
+      : '';
     const sellPrice = priceEl
       ? window.__DAC7_GUARD_WIDGET__.parsePrice(priceEl.textContent)
       : '';
@@ -95,7 +100,8 @@
     platform: 'kleinanzeigen',
     platformName: 'Kleinanzeigen',
     defaultPaymentMethod: path.includes('auftraege') || path.includes('bezahlfunktion') ? 'platform' : 'cash',
-    onScanPage: isSellerArea ? scanVisibleOrders : null
+    onScanPage: isSellerArea ? scanVisibleOrders : null,
+    getDefaultPrefill: isAdPage ? () => extractListingFromElement(document.body) : null
   });
 
   let captureDeleteEnabled = true;
@@ -106,9 +112,9 @@
     }
   });
 
-  // Listen for clicks on "Anzeige löschen" / "Verkauft" buttons ONLY on "Meine Anzeigen"
+  // Listen for clicks on "Anzeige löschen" / "Verkauft" buttons on "Meine Anzeigen" and own ad pages
   // (avoid false positives on "Nachrichten" where "Löschen" deletes a chat conversation)
-  if (path.includes('m-meine-anzeigen')) {
+  if (path.includes('m-meine-anzeigen') || isAdPage) {
     document.addEventListener(
       'click',
       (event) => {

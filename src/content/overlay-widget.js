@@ -251,7 +251,13 @@
     }
   `;
 
-  function createWidget({ platform, platformName, defaultPaymentMethod = 'platform', onScanPage = null }) {
+  function createWidget({
+    platform,
+    platformName,
+    defaultPaymentMethod = 'platform',
+    onScanPage = null,
+    getDefaultPrefill = null
+  }) {
     const host = document.createElement('div');
     host.id = 'dac7-guard-root';
     const shadow = host.attachShadow({ mode: 'open' });
@@ -302,7 +308,10 @@
       const addBtn = document.createElement('button');
       addBtn.className = 'pill-btn';
       addBtn.textContent = '+ Verkauf';
-      addBtn.addEventListener('click', () => openCaptureModal({}));
+      addBtn.addEventListener('click', () => {
+        const prefill = typeof getDefaultPrefill === 'function' ? getDefaultPrefill() || {} : {};
+        openCaptureModal(prefill);
+      });
 
       pill.appendChild(dot);
       pill.appendChild(info);
