@@ -1,101 +1,136 @@
 # 🛡️ DAC7 Guard
 
-**Open-Source Chrome Extension (Manifest V3) zum lokalen Tracking der DAC7 / PStTG-Meldegrenzen und § 23 EStG Gewinne für Kleinanzeigen, eBay & Vinted.**
+**100% local, zero-dependency open-source Chrome Extension (Manifest V3) to track your EU DAC7 marketplace reporting limits (`≥ 30 sales` or `> €2,000/year` per platform) and private resale records.**
 
-> **100 % lokal • Zero Dependencies • Keine Server • Kein Tracking • MIT-Lizenz**
+> **100% Local (`chrome.storage.local`) • Zero Dependencies • Zero Servers • Zero Tracking • MIT License**
 
-![DAC7 Guard Dashboard & Popup Vorschau](./assets/showcase-1280x800.png)
+![DAC7 Guard Dashboard & Popup Preview](./assets/showcase-1280x800.png)
 
 ---
 
-## Warum DAC7 Guard?
+## Why DAC7 Guard?
 
-Seit dem **Plattformen-Steuertransparenzgesetz (PStTG / EU-Richtlinie DAC7)** müssen Online-Marktplätze (Kleinanzeigen, eBay, Vinted, Etsy u. a.) private Verkäufer automatisch an das Bundeszentralamt für Steuern (BZSt) melden, sobald **pro Kalenderjahr und pro Plattform** eine der beiden Schwellen erreicht wird:
+Under **EU Directive 2021/514 (DAC7)** — implemented across **all 27 EU member states** (e.g., *PStTG* in Germany, *DPMG* in Austria, *DGFiP DAC7* in France) — online marketplaces (eBay, Vinted, Kleinanzeigen, Etsy, Wallapop, Leboncoin, Marktplaats, Willhaben, etc.) must automatically report private sellers to national tax authorities once you reach **either** threshold **per platform and calendar year**:
 
-| Grenze (pro Plattform & Jahr) | Schwellenwert (PStTG § 4 Abs. 5) |
+| EU DAC7 Threshold (per platform & year) | Trigger |
 |---|---|
-| **Anzahl Verkäufe** | **ab 30 Transaktionen** (`≥ 30`) |
-| **Gesamtumsatz (Brutto)** | **über 2.000 €** (`> 2.000,00 €`) |
+| **Number of sales** | **30 or more transactions** (`≥ 30`) |
+| **Gross revenue** | **More than €2,000** (`> €2,000.00`) |
 
-Zusätzlich gilt für private Veräußerungsgeschäfte innerhalb der 1-Jahres-Spekulationsfrist (**§ 23 EStG**, z. B. Sammlerstücke, Uhren, Nicht-Alltagsgegenstände) eine **Freigrenze von 1.000 € Gewinn** pro Jahr.
+**Important:** Being reported does **not** automatically mean you owe taxes — selling your own used household items at a loss is generally tax-free across the EU. However, if tax authorities ask 1–2 years later, most people no longer have records of what they sold or originally paid. **DAC7 Guard** keeps a clean, private, exportable record locally in your browser.
 
-**Wichtig:** Eine Meldung bedeutet *nicht* automatisch Steuern (normaler gebrauchter Hausrat, der unter Einkaufspreis verkauft wird, bleibt steuerfrei). Wer aber nach 1–2 Jahren Post vom Finanzamt bekommt, braucht saubere Nachweise – genau dafür ist **DAC7 Guard** da.
+*(Note for Germany: also tracks the **§ 23 EStG €1,000** short-term private resale profit exemption with intra-year loss offsetting.)*
 
 ---
 
 ## Features
 
-- **DAC7 / PStTG Ampel pro Plattform:** Fortschrittsbalken für **30 Verkäufe** und **2.000 € Umsatz** getrennt für Kleinanzeigen, eBay, Vinted & Sonstige.
-- **Kleinanzeigen-Besonderheit integriert:** Trennt sauber zwischen meldepflichtigen **„Sicher bezahlen“-Transaktionen** und nicht-meldepflichtigen Privatverkäufen (Barzahlung, PayPal privat, Überweisung).
-- **Smart-Capture auf Kleinanzeigen:** Beim Klick auf *„Anzeige löschen“* oder *„Verkauft“* erscheint ein unaufdringliches Overlay (Shadow DOM) mit vorausgefülltem Titel & Preis.
-- **Seiten-Scanner:** Auf Kleinanzeigen (*Meine Aufträge / Sicher bezahlen*), eBay (*Verkaufte Artikel*) und Vinted (*Bestellungen*) lassen sich sichtbare Verkäufe per Klick einlesen (mit Duplikat-Schutz).
-- **§ 23 EStG Gewinn-Tracker:** Optionaler Einkaufspreis pro Artikel zeigt automatisch Gewinn/Verlust und die 1.000-€-Freigrenze.
-- **Finanzamt-Nachweis-Export:**
-  - **CSV Export** (UTF-8 BOM, Semikolon-getrennt – direkt für deutsches Excel / LibreOffice)
-  - **PDF / Druckansicht** für die Steuerakte
-  - **JSON Backup & Restore**
-- **Maximale Privatsphäre:** Benötigt nur die `storage`-Berechtigung. Null externe API-Calls, null Analytics, null Build-Abhängigkeiten.
+- **Per-Platform DAC7 Traffic Light:** Progress bars for **30 sales** and **€2,000 revenue** per calendar year + toolbar badge warning at 80% (configurable).
+- **Reportable vs. Private Cash Sales:** Separates platform-processed payments (e.g., Kleinanzeigen *„Sicher bezahlen“*, eBay, Vinted) from non-reportable private sales (cash pickup, private PayPal, bank transfer).
+- **In-Page Quick-Capture & Auto-Prefill:** Shadow-DOM status pill on supported marketplaces; auto-prefills title, price, and listing ID on Kleinanzeigen listing pages and prompts when deleting/marking an ad as sold.
+- **Profit/Loss & Tax Helper:** Optional original purchase price per item calculates net gain/loss and tracks short-term gains (`< 1 year` non-everyday items).
+- **Audit-Ready Exports:**
+  - **Excel-compatible CSV** (UTF-8 BOM, semicolon-delimited, Excel formula-injection hardened)
+  - **Printable PDF Summary** (`window.print()` report layout)
+  - **JSON Backup & Restore** (with deduplication)
+- **Privacy by Design:** Only requires the `storage` permission. Zero external API calls, zero telemetry, zero runtime dependencies.
 
 ---
 
 ## Installation (Chrome, Brave, Edge, Arc)
 
-Da DAC7 Guard ohne Build-Schritt auskommt, kannst du das Repository direkt laden:
+No build step required — load directly from source in 30 seconds:
 
-1. Repository klonen oder als ZIP herunterladen:
+1. Clone this repository (or download as ZIP):
    ```bash
    git clone https://github.com/altantosun/dac7-guard.git
    ```
-2. In Chrome `chrome://extensions` öffnen.
-3. Oben rechts den **Entwicklermodus** aktivieren.
-4. Auf **„Entpackte Erweiterung laden“** klicken und den Ordner `dac7-guard` auswählen.
-5. Fertig – das 🛡️-Icon erscheint in deiner Browserleiste.
+2. Open `chrome://extensions` in your browser.
+3. Enable **Developer mode** (top right).
+4. Click **Load unpacked** and select the `dac7-guard` folder.
+5. Pin the 🛡️ **DAC7 Guard** icon to your toolbar.
 
 ---
 
-## Tests & Entwicklung
+## EU Marketplace Roadmap & Contribution TODOs
 
-Benötigt nur Node.js (ab v20, keine `npm install`-Pakete nötig):
+DAC7 applies across the entire EU — PRs for additional country adapters and translations are very welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to add an adapter in ~50 lines of JS.
+
+### Marketplace Adapters
+
+| Region | Marketplace | Status | Notes / Adapter |
+|---|---|---|---|
+| 🇩🇪 Germany | **Kleinanzeigen** (`kleinanzeigen.de`) | ✅ Supported | Auto-prefill, delete prompt, order scanner, *Sicher bezahlen* vs. cash |
+| 🇩🇪 / 🇪🇺 EU | **eBay** (`ebay.de`, expand to `.fr`, `.it`, `.es`, `.nl`, `.at`) | 🟡 DE live / ⬜ EU domains | Add multi-TLD `matches` in `manifest.json` |
+| 🇩🇪 / 🇪🇺 EU | **Vinted** (`vinted.de`, expand to `.fr`, `.it`, `.es`, `.nl`, `.pl`, `.be`) | 🟡 DE live / ⬜ EU domains | Add multi-TLD `matches` in `manifest.json` |
+| 🇦🇹 Austria | **Willhaben** (`willhaben.at`) | ⬜ TODO | *PayLivery* (reportable) vs. cash pickup |
+| 🇫🇷 France | **Leboncoin** (`leboncoin.fr`) | ⬜ TODO | *Paiement sécurisé* vs. in-person cash |
+| 🇪🇸 Spain / 🇮🇹 Italy | **Wallapop** (`wallapop.com`) | ⬜ TODO | Wallapop Shipping vs. local meetup |
+| 🇮🇹 Italy | **Subito.it** (`subito.it`) | ⬜ TODO | *TuttoSubito* vs. local pickup |
+| 🇳🇱 Netherlands | **Marktplaats** (`marktplaats.nl`) | ⬜ TODO | *Betaalverzoek / Kopersbescherming* vs. cash |
+| 🇧🇪 Belgium | **2dehands / 2ememain** (`2dehands.be`) | ⬜ TODO | Same platform family as Marktplaats |
+| 🇵🇱 Poland | **OLX / Allegro Lokalnie** (`olx.pl`, `allegrolokalnie.pl`) | ⬜ TODO | Platform payment vs. cash |
+| 🇸🇪 Sweden | **Blocket / Tradera** (`blocket.se`, `tradera.com`) | ⬜ TODO | SEK → EUR conversion helper needed |
+| 🇪🇺 Pan-EU | **Etsy** (`etsy.com`) | ⬜ TODO | Seller orders page adapter |
+| 🇪🇺 Pan-EU | **Vestiaire Collective / Depop** | ⬜ TODO | Fashion resale adapters |
+
+### Core & UX TODOs
+
+- [ ] **i18n (`_locales/`):** English UI alongside German (and community translations: FR, ES, IT, NL, PL)
+- [ ] **Multi-currency support:** Automatic EUR reference conversion for non-Euro EU states (PLN, SEK, CZK, DKK, HUF, RON)
+- [ ] **Firefox Add-on packaging:** Add `browser_specific_settings.gecko` manifest support
+- [ ] **Receipt/Photo attachment:** Store compressed local receipt thumbnails in IndexedDB for tax proof
+
+---
+
+## Development & Testing
+
+Requires Node.js >= 20 (zero `npm install` packages required):
 
 ```bash
-# Unit-Tests ausführen (DAC7-Regeln, Preisparser, § 23 EStG, CSV/JSON-Export)
+# Run all unit & integration tests (DAC7 rules, price parser, § 23 EStG, CSV/JSON, storage CRUD)
 npm test
 
-# Extension-Icons neu generieren
+# Regenerate extension PNG icons
 npm run icons
+
+# Build a clean Chrome Web Store / GitHub Release zip in dist/
+npm run pack
 ```
 
-### Projektstruktur
+### Project Structure
 
 ```text
 dac7-guard/
 ├── manifest.json                 # Chrome Extension Manifest V3
-├── icons/                        # PNG Icons (16, 48, 128 px)
+├── icons/                        # PNG icons (16, 48, 128 px)
+├── assets/                       # Store showcase & promo images
 ├── scripts/
-│   └── generate-icons.js         # Zero-Dependency PNG-Generator
+│   ├── generate-icons.js         # Zero-dependency PNG generator
+│   └── pack.js                   # Release ZIP bundler
 ├── src/
 │   ├── shared/
-│   │   ├── rules.js              # DAC7 / PStTG & § 23 EStG Berechnungslogik
-│   │   ├── storage.js            # chrome.storage.local Wrapper
-│   │   └── export.js             # Excel-CSV & JSON Backup/Import
+│   │   ├── rules.js              # EU DAC7 / PStTG & § 23 EStG logic
+│   │   ├── storage.js            # chrome.storage.local CRUD & sanitization
+│   │   └── export.js             # Excel-CSV & JSON backup/restore
 │   ├── background/
-│   │   └── service-worker.js     # Badge-Updates & Message-Router
+│   │   └── service-worker.js     # Badge updates & serialized write queue
 │   ├── content/
-│   │   ├── overlay-widget.js     # Shadow-DOM Status-Pill & Capture-Modal
-│   │   ├── kleinanzeigen.js      # Adapter für kleinanzeigen.de
-│   │   ├── ebay.js               # Adapter für ebay.de
-│   │   └── vinted.js             # Adapter für vinted.de
-│   ├── popup/                    # Toolbar-Popup UI
-│   └── dashboard/                # Vollständiges Dashboard, Print/PDF & Guide
-└── tests/                        # Node Test Runner Suite
+│   │   ├── overlay-widget.js     # Shadow-DOM pill & quick-capture modal
+│   │   ├── kleinanzeigen.js      # kleinanzeigen.de adapter
+│   │   ├── ebay.js               # ebay.de adapter
+│   │   └── vinted.js             # vinted.de adapter
+│   ├── popup/                    # Toolbar popup UI
+│   └── dashboard/                # Full dashboard, print/PDF report & guide
+└── tests/                        # Node.js native test suite
 ```
 
 ---
 
-## Haftungsausschluss / Disclaimer
+## Disclaimer
 
-DAC7 Guard ist ein privates Open-Source-Hilfstool zur eigenen Übersicht und **stellt keine Rechts- oder Steuerberatung dar**. Alle Berechnungen erfolgen ohne Gewähr. Bei steuerlichen Fragen wende dich bitte an eine Steuerberaterin, einen Steuerberater oder dein zuständiges Finanzamt.
+DAC7 Guard is a private open-source helper tool for personal record-keeping and **does not constitute legal or tax advice**. Tax rules vary by EU member state. Always consult a qualified tax advisor or your local tax authority if unsure.
 
-## Lizenz
+## License
 
 [MIT License](./LICENSE)
