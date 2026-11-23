@@ -42,7 +42,7 @@ Da DAC7 Guard ohne Build-Schritt auskommt, kannst du das Repository direkt laden
 
 1. Repository klonen oder als ZIP herunterladen:
    ```bash
-   git clone https://github.com/<dein-username>/dac7-guard.git
+   git clone https://github.com/altantosun/dac7-guard.git
    ```
 2. In Chrome `chrome://extensions` öffnen.
 3. Oben rechts den **Entwicklermodus** aktivieren.
