@@ -27,6 +27,7 @@ import {
   parseJsonBackup,
   triggerDownload
 } from '../shared/export.js';
+import { applyI18n, detectLocale, t } from '../shared/i18n.js';
 
 const state = {
   sales: [],
@@ -232,8 +233,10 @@ function renderTable() {
 }
 
 function render() {
+  const lang = detectLocale(state.settings?.language || 'auto');
+  applyI18n(document, lang);
   els.printYear.textContent = String(state.year);
-  els.printDate.textContent = new Date().toLocaleDateString('de-DE');
+  els.printDate.textContent = new Date().toLocaleDateString(lang === 'en' ? 'en-GB' : 'de-DE');
   renderPlatformCards();
   renderTaxSummary();
   renderTable();
@@ -429,6 +432,7 @@ async function init() {
     state.sales = freshSales;
     state.settings = freshSettings;
     els.warnThresholdInput.value = String(Math.round((freshSettings.warningRatio ?? 0.8) * 100));
+    if (els.langSelect) els.langSelect.value = freshSettings.language || 'auto';
     els.showPillCheck.checked = freshSettings.showFloatingPill !== false;
     els.captureDeleteCheck.checked = freshSettings.captureDeletePrompt !== false;
     populateYears();

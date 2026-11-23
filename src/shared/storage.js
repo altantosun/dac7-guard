@@ -181,6 +181,10 @@ export async function clearAllSales() {
   await saveSales([]);
 }
 
+function sanitizeLanguage(lang) {
+  return lang === 'de' || lang === 'en' || lang === 'auto' ? lang : 'auto';
+}
+
 export async function getSettings() {
   const result = await chrome.storage.local.get(STORAGE_KEY_SETTINGS);
   const raw = { ...DEFAULT_SETTINGS, ...(result[STORAGE_KEY_SETTINGS] || {}) };
@@ -188,7 +192,8 @@ export async function getSettings() {
     ...raw,
     warningRatio: clampWarningRatio(raw.warningRatio),
     showFloatingPill: raw.showFloatingPill !== false,
-    captureDeletePrompt: raw.captureDeletePrompt !== false
+    captureDeletePrompt: raw.captureDeletePrompt !== false,
+    language: sanitizeLanguage(raw.language)
   };
 }
 
@@ -199,7 +204,8 @@ export async function saveSettings(patch) {
     ...merged,
     warningRatio: clampWarningRatio(merged.warningRatio),
     showFloatingPill: merged.showFloatingPill !== false,
-    captureDeletePrompt: merged.captureDeletePrompt !== false
+    captureDeletePrompt: merged.captureDeletePrompt !== false,
+    language: sanitizeLanguage(merged.language)
   };
   await chrome.storage.local.set({ [STORAGE_KEY_SETTINGS]: updated });
   return updated;

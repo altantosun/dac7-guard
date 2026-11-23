@@ -12,7 +12,7 @@
         <span class="shield" aria-hidden="true">🛡️</span>
         <div>
           <h1>DAC7 Guard</h1>
-          <p>PStTG &amp; § 23 EStG Tracker</p>
+          <p data-i18n="subtitle">EU DAC7 &amp; § 23 EStG Tracker</p>
         </div>
       </div>
       <div class="header-actions">
@@ -37,7 +37,7 @@
 
         <div class="metric">
           <div class="metric-row">
-            <span>Meldepflichtige Verkäufe</span>
+            <span data-i18n="reportableSales">Meldepflichtige Verkäufe</span>
             <strong id="txLabel">0 / 30</strong>
           </div>
           <div class="bar"><div class="bar-fill" id="txBar"></div></div>
@@ -45,7 +45,7 @@
 
         <div class="metric">
           <div class="metric-row">
-            <span>Meldepflichtiger Umsatz</span>
+            <span data-i18n="reportableRevenue">Meldepflichtiger Umsatz</span>
             <strong id="revLabel">0 € / 2.000 €</strong>
           </div>
           <div class="bar"><div class="bar-fill" id="revBar"></div></div>
@@ -57,11 +57,11 @@
       <!-- § 23 EStG Summary -->
       <section class="card compact">
         <div class="metric-row">
-          <span class="estg-title">§ 23 EStG Kurzfrist-Gewinn (alle Plattformen)</span>
+          <span class="estg-title" data-i18n="estgTitle">§ 23 EStG Kurzfrist-Gewinn (alle Plattformen)</span>
           <strong id="estgLabel">0 € / 1.000 €</strong>
         </div>
         <div class="bar thin"><div class="bar-fill" id="estgBar"></div></div>
-        <p class="tiny-hint">
+        <p class="tiny-hint" data-i18n="estgHint">
           Nur relevant bei Gewinn innerhalb von 12 Monaten für Nicht-Alltagsgegenstände.
         </p>
       </section>
@@ -102,16 +102,16 @@
       <!-- Recent Sales -->
       <section class="recent">
         <div class="recent-head">
-          <h3>Letzte Verkäufe</h3>
-          <button id="csvExportBtn" class="link-btn">CSV Export</button>
+          <h3 data-i18n="recentSales">Letzte Verkäufe</h3>
+          <button id="csvExportBtn" class="link-btn" data-i18n="csvExport">CSV Export</button>
         </div>
         <ul id="recentList" class="recent-list"></ul>
       </section>
     </main>
 
     <footer class="footer">
-      <span>100 % lokal gespeichert • Keine Steuerberatung</span>
-      <button id="footerDashBtn" class="link-btn">Dashboard &amp; Guide</button>
+      <span data-i18n="footerPrivacy">100 % lokal gespeichert • Keine Steuerberatung</span>
+      <button id="footerDashBtn" class="link-btn" data-i18n="dashGuide">Dashboard &amp; Guide</button>
     </footer>
 
     <script type="module" src="popup.js"></script>

@@ -42,7 +42,18 @@ export const MESSAGES = {
     noSalesYet: 'Noch keine Verkäufe für diese Auswahl erfasst.',
     allPlatforms: 'Alle Plattformen',
     settingsSaved: 'Einstellungen gespeichert.',
-    languageLabel: 'Sprache / Language'
+    languageLabel: 'Sprache / Language',
+    totalRevLabel: 'Gesamtumsatz (alle Plattformen)',
+    netProfitLabel: 'Saldo (VK − bekannter EK)',
+    shortTermLabel: '§ 23 EStG Kurzfrist-Gewinn (< 1 Jahr)',
+    recordedSales: 'Erfasste Verkäufe',
+    settingsTitle: 'Einstellungen',
+    warnThresholdLabel: 'Warnschwelle für Ampel & Badge (%)',
+    showPillLabel: 'Status-Leiste (Floating Pill) auf Marktplätzen anzeigen',
+    captureDeleteLabel: 'Beim Löschen einer Kleinanzeigen-Anzeige fragen, ob sie verkauft wurde',
+    jsonBackupBtn: 'JSON Backup speichern',
+    jsonImportBtn: 'JSON importieren',
+    clearAllBtn: 'Alle Daten löschen'
   },
   en: {
     subtitle: 'EU DAC7 & Private Resale Tracker',
@@ -69,11 +80,30 @@ export const MESSAGES = {
     noSalesYet: 'No sales recorded for this selection yet.',
     allPlatforms: 'All platforms',
     settingsSaved: 'Settings saved.',
-    languageLabel: 'Language / Sprache'
+    languageLabel: 'Language / Sprache',
+    totalRevLabel: 'Total revenue (all platforms)',
+    netProfitLabel: 'Net balance (sale − known cost)',
+    shortTermLabel: 'Short-term taxable profit (< 1 year)',
+    recordedSales: 'Recorded sales',
+    settingsTitle: 'Settings',
+    warnThresholdLabel: 'Warning threshold for traffic light & badge (%)',
+    showPillLabel: 'Show floating status pill on supported marketplaces',
+    captureDeleteLabel: 'Ask when deleting a Kleinanzeigen ad if it was sold',
+    jsonBackupBtn: 'Save JSON backup',
+    jsonImportBtn: 'Import JSON',
+    clearAllBtn: 'Delete all data'
   }
 };
 
 export function t(key, lang = 'de') {
   const dict = MESSAGES[lang] || MESSAGES.en;
   return dict[key] || MESSAGES.en[key] || key;
+}
+
+export function applyI18n(root, lang = 'de') {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  root.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    if (key) el.textContent = t(key, lang);
+  });
 }

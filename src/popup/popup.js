@@ -12,7 +12,7 @@ import {
 } from '../shared/rules.js';
 import { addSale, deleteSale, getSales, getSettings } from '../shared/storage.js';
 import { buildCsv, triggerDownload } from '../shared/export.js';
-import { detectLocale, t } from '../shared/i18n.js';
+import { applyI18n, detectLocale, t } from '../shared/i18n.js';
 
 const state = {
   sales: [],
@@ -84,6 +84,7 @@ function render() {
   renderTabs();
 
   const lang = detectLocale(state.settings?.language || 'auto');
+  applyI18n(document, lang);
   const warningRatio = state.settings?.warningRatio ?? 0.8;
   const platformMeta = PLATFORMS[state.platform];
   const stats = calculatePlatformStats(state.sales, state.year, state.platform, warningRatio);

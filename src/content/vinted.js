@@ -15,7 +15,10 @@
 
     cards.forEach((card) => {
       const text = (card.textContent || '').replace(/\s+/g, ' ').trim();
-      if (!/abgeschlossen|verkauft|geliefert|bezahlt/i.test(text)) return;
+      // Multi-language EU Vinted completed/sold order keywords (DE, EN, FR, ES, PT, IT, NL, PL)
+      if (!/abgeschlossen|verkauft|geliefert|bezahlt|completed|sold|delivered|vendu|livr[eé]|termin[eé]|vendido|entregado|completado|venduto|consegnato|completato|verkocht|bezorgd|voltooid|sprzedan|dostarczon|zako[nń]czon/i.test(text)) {
+        return;
+      }
 
       const titleEl = card.querySelector('h3, h4, .web_ui__Text__title, [data-testid*="title"]');
       const title = titleEl ? titleEl.textContent.trim() : text.slice(0, 80);

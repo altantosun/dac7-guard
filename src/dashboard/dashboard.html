@@ -13,13 +13,13 @@
           <span class="shield">🛡️</span>
           <div>
             <h1>DAC7 Guard</h1>
-            <p>Privater Verkaufs-, PStTG- &amp; § 23 EStG-Tracker (100 % lokal)</p>
+            <p data-i18n="dashSubtitle">Privater Verkaufs-, PStTG- &amp; § 23 EStG-Tracker (100 % lokal)</p>
           </div>
         </div>
         <div class="topbar-controls">
           <select id="yearSelect" aria-label="Kalenderjahr"></select>
-          <button id="csvBtn" class="btn btn-secondary">CSV Export</button>
-          <button id="printBtn" class="btn btn-primary">PDF / Drucken</button>
+          <button id="csvBtn" class="btn btn-secondary" data-i18n="csvExport">CSV Export</button>
+          <button id="printBtn" class="btn btn-primary" data-i18n="pdfPrint">PDF / Drucken</button>
         </div>
       </div>
     </header>
@@ -38,17 +38,17 @@
       <section class="card tax-card">
         <div class="tax-grid">
           <div>
-            <span class="label">Gesamtumsatz (alle Plattformen)</span>
+            <span class="label" data-i18n="totalRevLabel">Gesamtumsatz (alle Plattformen)</span>
             <strong class="big-num" id="totalRev">0 €</strong>
             <span class="sub" id="totalCount">0 Verkäufe</span>
           </div>
           <div>
-            <span class="label">Saldo (VK − bekannter EK)</span>
+            <span class="label" data-i18n="netProfitLabel">Saldo (VK − bekannter EK)</span>
             <strong class="big-num" id="netProfit">0 €</strong>
             <span class="sub" id="costCoverage">0 Artikel mit EK</span>
           </div>
           <div>
-            <span class="label">§ 23 EStG Kurzfrist-Gewinn (&lt; 1 Jahr)</span>
+            <span class="label" data-i18n="shortTermLabel">§ 23 EStG Kurzfrist-Gewinn (&lt; 1 Jahr)</span>
             <strong class="big-num" id="shortTermProfit">0 € / 1.000 €</strong>
             <div class="bar thin"><div class="bar-fill" id="estgBar"></div></div>
           </div>
@@ -58,7 +58,7 @@
       <!-- Sales Table -->
       <section class="card">
         <div class="section-head">
-          <h2>Erfasste Verkäufe</h2>
+          <h2 data-i18n="recordedSales">Erfasste Verkäufe</h2>
           <div class="table-controls no-print">
             <input type="search" id="searchInput" placeholder="Artikel oder Notiz suchen…" />
             <select id="platformFilter">
@@ -152,13 +152,13 @@
       <!-- Backup & Settings -->
       <div class="grid-2 no-print">
         <section class="card">
-          <h2>Einstellungen</h2>
+          <h2 data-i18n="settingsTitle">Einstellungen</h2>
           <label class="setting-row">
-            <span>Warnschwelle für Ampel &amp; Badge (%)</span>
+            <span data-i18n="warnThresholdLabel">Warnschwelle für Ampel &amp; Badge (%)</span>
             <input type="number" id="warnThresholdInput" min="50" max="99" step="5" value="80" />
           </label>
           <label class="setting-row">
-            <span>Sprache / Language</span>
+            <span data-i18n="languageLabel">Sprache / Language</span>
             <select id="langSelect">
               <option value="auto">Auto (Browser)</option>
               <option value="de">Deutsch</option>
@@ -167,19 +167,19 @@
           </label>
           <label class="check">
             <input type="checkbox" id="showPillCheck" checked />
-            Status-Leiste (Floating Pill) auf Kleinanzeigen, eBay &amp; Vinted anzeigen
+            <span data-i18n="showPillLabel">Status-Leiste (Floating Pill) auf Kleinanzeigen, eBay &amp; Vinted anzeigen</span>
           </label>
           <label class="check">
             <input type="checkbox" id="captureDeleteCheck" checked />
-            Beim Löschen einer Kleinanzeigen-Anzeige fragen, ob sie verkauft wurde
+            <span data-i18n="captureDeleteLabel">Beim Löschen einer Kleinanzeigen-Anzeige fragen, ob sie verkauft wurde</span>
           </label>
           <div class="backup-actions">
-            <button id="jsonExportBtn" class="btn btn-secondary">JSON Backup speichern</button>
+            <button id="jsonExportBtn" class="btn btn-secondary" data-i18n="jsonBackupBtn">JSON Backup speichern</button>
             <label class="btn btn-secondary file-label">
-              JSON importieren
+              <span data-i18n="jsonImportBtn">JSON importieren</span>
               <input type="file" id="jsonImportInput" accept=".json,application/json" hidden />
             </label>
-            <button id="clearAllBtn" class="btn btn-danger">Alle Daten löschen</button>
+            <button id="clearAllBtn" class="btn btn-danger" data-i18n="clearAllBtn">Alle Daten löschen</button>
           </div>
           <p class="status-msg" id="settingsMsg"></p>
         </section>
