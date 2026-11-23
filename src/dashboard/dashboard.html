@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DAC7 Guard – Dashboard &amp; Finanzamt-Nachweis</title>
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <header class="topbar no-print">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="shield">🛡️</span>
+          <div>
+            <h1>DAC7 Guard</h1>
+            <p>Privater Verkaufs-, PStTG- &amp; § 23 EStG-Tracker (100 % lokal)</p>
+          </div>
+        </div>
+        <div class="topbar-controls">
+          <select id="yearSelect" aria-label="Kalenderjahr"></select>
+          <button id="csvBtn" class="btn btn-secondary">CSV Export</button>
+          <button id="printBtn" class="btn btn-primary">PDF / Drucken</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- Print-only header -->
+      <div class="print-only print-header">
+        <h1>Verkaufsübersicht &amp; Nachweis privater Veräußerungen (<span id="printYear"></span>)</h1>
+        <p>Erstellt mit DAC7 Guard (lokale Browser-Datenbank) am <span id="printDate"></span>. Keine Steuerberatung.</p>
+      </div>
+
+      <!-- Platform Summary Cards -->
+      <section class="grid-platforms" id="platformCards"></section>
+
+      <!-- § 23 EStG & Overall Summary -->
+      <section class="card tax-card">
+        <div class="tax-grid">
+          <div>
+            <span class="label">Gesamtumsatz (alle Plattformen)</span>
+            <strong class="big-num" id="totalRev">0 €</strong>
+            <span class="sub" id="totalCount">0 Verkäufe</span>
+          </div>
+          <div>
+            <span class="label">Saldo (VK − bekannter EK)</span>
+            <strong class="big-num" id="netProfit">0 €</strong>
+            <span class="sub" id="costCoverage">0 Artikel mit EK</span>
+          </div>
+          <div>
+            <span class="label">§ 23 EStG Kurzfrist-Gewinn (&lt; 1 Jahr)</span>
+            <strong class="big-num" id="shortTermProfit">0 € / 1.000 €</strong>
+            <div class="bar thin"><div class="bar-fill" id="estgBar"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sales Table -->
+      <section class="card">
+        <div class="section-head">
+          <h2>Erfasste Verkäufe</h2>
+          <div class="table-controls no-print">
+            <input type="search" id="searchInput" placeholder="Artikel oder Notiz suchen…" />
+            <select id="platformFilter">
+              <option value="all">Alle Plattformen</option>
+              <option value="kleinanzeigen">Kleinanzeigen</option>
+              <option value="ebay">eBay</option>
+              <option value="vinted">Vinted</option>
+              <option value="other">Sonstige</option>
+            </select>
+            <button id="addNewBtn" class="btn btn-primary">+ Verkauf</button>
+          </div>
+        </div>
+
+        <!-- Inline Add Form -->
+        <form id="addForm" class="add-panel hidden no-print">
+          <div class="form-grid">
+            <label>
+              Plattform
+              <select name="platform">
+                <option value="kleinanzeigen">Kleinanzeigen</option>
+                <option value="ebay">eBay</option>
+                <option value="vinted">Vinted</option>
+                <option value="other">Sonstige</option>
+              </select>
+            </label>
+            <label>
+              Artikelbezeichnung
+              <input type="text" name="title" required placeholder="z. B. Sony WH-1000XM4" />
+            </label>
+            <label>
+              Datum
+              <input type="date" name="date" required />
+            </label>
+            <label>
+              Verkaufspreis (€)
+              <input type="number" name="sellPrice" step="0.01" min="0" required />
+            </label>
+            <label>
+              Einkaufspreis damals (€)
+              <input type="number" name="buyPrice" step="0.01" min="0" placeholder="optional" />
+            </label>
+            <label>
+              Zahlungsart
+              <select name="paymentMethod">
+                <option value="platform">Plattform / Sicher bezahlen (DAC7)</option>
+                <option value="cash">Barzahlung (privat)</option>
+                <option value="paypal_friends">PayPal (privat)</option>
+                <option value="bank_transfer">Überweisung (privat)</option>
+              </select>
+            </label>
+            <label class="span-2">
+              Notiz / Nachweis-Hinweis
+              <input type="text" name="note" placeholder="z. B. Privatbesitz, 2021 bei MediaMarkt gekauft" />
+            </label>
+          </div>
+          <div class="form-checks">
+            <label class="check">
+              <input type="checkbox" name="isEverydayItem" checked />
+              Alltagsgegenstand / gebrauchter Hausrat
+            </label>
+            <label class="check">
+              <input type="checkbox" name="heldUnderOneYear" />
+              Weniger als 1 Jahr besessen (§ 23 EStG)
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="button" id="cancelFormBtn" class="btn btn-secondary">Abbrechen</button>
+            <button type="submit" class="btn btn-primary">Verkauf speichern</button>
+          </div>
+        </form>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Plattform</th>
+                <th>Artikel &amp; Notiz</th>
+                <th class="num">Verkauf</th>
+                <th class="num">EK damals</th>
+                <th class="num">Gewinn/Verlust</th>
+                <th>DAC7</th>
+                <th class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="salesBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Backup & Settings -->
+      <div class="grid-2 no-print">
+        <section class="card">
+          <h2>Einstellungen</h2>
+          <label class="setting-row">
+            <span>Warnschwelle für Ampel &amp; Badge (%)</span>
+            <input type="number" id="warnThresholdInput" min="50" max="99" step="5" value="80" />
+          </label>
+          <label class="check">
+            <input type="checkbox" id="showPillCheck" checked />
+            Status-Leiste (Floating Pill) auf Kleinanzeigen, eBay &amp; Vinted anzeigen
+          </label>
+          <label class="check">
+            <input type="checkbox" id="captureDeleteCheck" checked />
+            Beim Löschen einer Kleinanzeigen-Anzeige fragen, ob sie verkauft wurde
+          </label>
+          <div class="backup-actions">
+            <button id="jsonExportBtn" class="btn btn-secondary">JSON Backup speichern</button>
+            <label class="btn btn-secondary file-label">
+              JSON importieren
+              <input type="file" id="jsonImportInput" accept=".json,application/json" hidden />
+            </label>
+            <button id="clearAllBtn" class="btn btn-danger">Alle Daten löschen</button>
+          </div>
+          <p class="status-msg" id="settingsMsg"></p>
+        </section>
+
+        <section class="card guide-card">
+          <h2>Kurzguide: PStTG (DAC7) &amp; § 23 EStG</h2>
+          <ul>
+            <li>
+              <strong>Meldegrenze (PStTG / DAC7):</strong> Plattformen melden dich ans Bundeszentralamt für Steuern (BZSt), wenn du <strong>pro Kalenderjahr &amp; Plattform</strong> mindestens <strong>30 Verkäufe</strong> ODER <strong>über 2.000 € Umsatz</strong> erreichst.
+            </li>
+            <li>
+              <strong>Kleinanzeigen-Besonderheit:</strong> In der Regel zählen dort nur Transaktionen über das interne System (<em>„Sicher bezahlen“ / „Direkt kaufen“</em>). Barzahlung oder private Überweisung werden nicht gemeldet.
+            </li>
+            <li>
+              <strong>Meldung ≠ Steuer:</strong> Gebrauchter privater Hausrat (Kleidung, Möbel, alte Technik), den du unter dem ursprünglichen Kaufpreis verkaufst, ist steuerfrei – auch oberhalb der Meldegrenze.
+            </li>
+            <li>
+              <strong>1.000-€-Freigrenze (§ 23 EStG):</strong> Nur bei Gegenständen, die innerhalb von 12 Monaten <em>mit Gewinn</em> weiterverkauft werden (und kein normaler Hausrat sind), gilt die Freigrenze von 1.000 € Gewinn pro Jahr.
+            </li>
+          </ul>
+          <p class="disclaimer">
+            Hinweis: DAC7 Guard ist ein privates Open-Source-Hilfstool und ersetzt keine steuerliche Beratung. Alle Daten bleiben ausschließlich lokal in deinem Browser.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="dashboard.js"></script>
+  </body>
+</html>

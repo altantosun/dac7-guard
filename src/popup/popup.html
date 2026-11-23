@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DAC7 Guard</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="brand">
+        <span class="shield" aria-hidden="true">🛡️</span>
+        <div>
+          <h1>DAC7 Guard</h1>
+          <p>PStTG &amp; § 23 EStG Tracker</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <select id="yearSelect" aria-label="Kalenderjahr"></select>
+        <button id="openDashboardBtn" class="icon-btn" title="Vollständiges Dashboard öffnen">↗</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- Platform Tabs -->
+      <nav class="tabs" id="platformTabs" aria-label="Plattformen"></nav>
+
+      <!-- DAC7 Status Card -->
+      <section class="card" id="dac7Card">
+        <div class="card-head">
+          <div>
+            <h2 id="platformTitle">Kleinanzeigen</h2>
+            <span class="sub" id="platformSub">Meldegrenze pro Plattform &amp; Jahr</span>
+          </div>
+          <span class="badge" id="statusBadge">Unter Grenze</span>
+        </div>
+
+        <div class="metric">
+          <div class="metric-row">
+            <span>Meldepflichtige Verkäufe</span>
+            <strong id="txLabel">0 / 30</strong>
+          </div>
+          <div class="bar"><div class="bar-fill" id="txBar"></div></div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-row">
+            <span>Meldepflichtiger Umsatz</span>
+            <strong id="revLabel">0 € / 2.000 €</strong>
+          </div>
+          <div class="bar"><div class="bar-fill" id="revBar"></div></div>
+        </div>
+
+        <div class="extra-note" id="nonReportableNote"></div>
+      </section>
+
+      <!-- § 23 EStG Summary -->
+      <section class="card compact">
+        <div class="metric-row">
+          <span class="estg-title">§ 23 EStG Kurzfrist-Gewinn (alle Plattformen)</span>
+          <strong id="estgLabel">0 € / 1.000 €</strong>
+        </div>
+        <div class="bar thin"><div class="bar-fill" id="estgBar"></div></div>
+        <p class="tiny-hint">
+          Nur relevant bei Gewinn innerhalb von 12 Monaten für Nicht-Alltagsgegenstände.
+        </p>
+      </section>
+
+      <!-- Quick Add Toggle & Form -->
+      <section class="card compact">
+        <button id="toggleAddBtn" class="btn-primary full">+ Verkauf schnell erfassen</button>
+        <form id="quickAddForm" class="quick-form hidden">
+          <input type="text" name="title" required placeholder="Artikel (z. B. Nintendo Switch)" />
+          <div class="grid-2">
+            <input type="number" name="sellPrice" step="0.01" min="0" required placeholder="Verkaufspreis (€)" />
+            <input type="number" name="buyPrice" step="0.01" min="0" placeholder="EK damals (€, opt.)" />
+          </div>
+          <div class="grid-2">
+            <input type="date" name="date" required />
+            <select name="paymentMethod">
+              <option value="platform">Sicher bezahlen / Plattform</option>
+              <option value="cash">Barzahlung (privat)</option>
+              <option value="paypal_friends">PayPal (privat)</option>
+              <option value="bank_transfer">Überweisung (privat)</option>
+            </select>
+          </div>
+          <label class="check">
+            <input type="checkbox" name="isEverydayItem" checked />
+            Gebrauchter Alltagsgegenstand / Hausrat
+          </label>
+          <label class="check">
+            <input type="checkbox" name="heldUnderOneYear" />
+            Weniger als 1 Jahr besessen
+          </label>
+          <div class="form-actions">
+            <button type="button" id="cancelAddBtn" class="btn-ghost">Abbrechen</button>
+            <button type="submit" class="btn-primary">Speichern</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Recent Sales -->
+      <section class="recent">
+        <div class="recent-head">
+          <h3>Letzte Verkäufe</h3>
+          <button id="csvExportBtn" class="link-btn">CSV Export</button>
+        </div>
+        <ul id="recentList" class="recent-list"></ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>100 % lokal gespeichert • Keine Steuerberatung</span>
+      <button id="footerDashBtn" class="link-btn">Dashboard &amp; Guide</button>
+    </footer>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

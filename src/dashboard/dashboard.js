@@ -1,0 +1,413 @@
+import {
+  DAC7_MAX_REVENUE_EUR,
+  DAC7_MAX_TRANSACTIONS,
+  ESTG_PROFIT_EXEMPTION_EUR,
+  PAYMENT_METHODS,
+  PLATFORMS,
+  calculatePlatformStats,
+  calculateTaxSummary,
+  filterSalesByYear,
+  formatEur,
+  getTodayIso,
+  isSaleReportable
+} from '../shared/rules.js';
+import {
+  addSale,
+  clearAllSales,
+  deleteSale,
+  getSales,
+  getSettings,
+  mergeImportedSales,
+  saveSettings,
+  updateSale
+} from '../shared/storage.js';
+import {
+  buildCsv,
+  buildJsonBackup,
+  parseJsonBackup,
+  triggerDownload
+} from '../shared/export.js';
+
+const state = {
+  sales: [],
+  settings: null,
+  year: new Date().getFullYear(),
+  platformFilter: 'all',
+  search: '',
+  editingId: null
+};
+
+const els = {
+  yearSelect: document.getElementById('yearSelect'),
+  printYear: document.getElementById('printYear'),
+  printDate: document.getElementById('printDate'),
+  platformCards: document.getElementById('platformCards'),
+  totalRev: document.getElementById('totalRev'),
+  totalCount: document.getElementById('totalCount'),
+  netProfit: document.getElementById('netProfit'),
+  costCoverage: document.getElementById('costCoverage'),
+  shortTermProfit: document.getElementById('shortTermProfit'),
+  estgBar: document.getElementById('estgBar'),
+  searchInput: document.getElementById('searchInput'),
+  platformFilter: document.getElementById('platformFilter'),
+  salesBody: document.getElementById('salesBody'),
+  addNewBtn: document.getElementById('addNewBtn'),
+  addForm: document.getElementById('addForm'),
+  cancelFormBtn: document.getElementById('cancelFormBtn'),
+  csvBtn: document.getElementById('csvBtn'),
+  printBtn: document.getElementById('printBtn'),
+  warnThresholdInput: document.getElementById('warnThresholdInput'),
+  showPillCheck: document.getElementById('showPillCheck'),
+  captureDeleteCheck: document.getElementById('captureDeleteCheck'),
+  jsonExportBtn: document.getElementById('jsonExportBtn'),
+  jsonImportInput: document.getElementById('jsonImportInput'),
+  clearAllBtn: document.getElementById('clearAllBtn'),
+  settingsMsg: document.getElementById('settingsMsg')
+};
+
+function populateYears() {
+  const current = new Date().getFullYear();
+  const years = new Set([current, current - 1, current - 2]);
+  for (const s of state.sales) {
+    const y = Number(String(s.date || '').slice(0, 4));
+    if (y >= 2023 && y <= current + 1) years.add(y);
+  }
+  const sorted = [...years].sort((a, b) => b - a);
+  els.yearSelect.innerHTML = sorted
+    .map((y) => `<option value="${y}" ${y === state.year ? 'selected' : ''}>${y}</option>`)
+    .join('');
+}
+
+function statusLabel(status) {
+  if (status === 'exceeded') return 'Meldegrenze erreicht';
+  if (status === 'warning') return 'Achtung';
+  return 'OK';
+}
+
+function renderPlatformCards() {
+  const warnRatio = state.settings?.warningRatio ?? 0.8;
+  els.platformCards.innerHTML = '';
+
+  for (const p of Object.values(PLATFORMS)) {
+    const stats = calculatePlatformStats(state.sales, state.year, p.id, warnRatio);
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="p-head">
+        <h3>${p.name}</h3>
+        <span class="badge ${stats.status}">${statusLabel(stats.status)}</span>
+      </div>
+      <div>
+        <div class="metric-row">
+          <span>Verkäufe (DAC7)</span>
+          <strong>${stats.reportableCount} / ${DAC7_MAX_TRANSACTIONS}</strong>
+        </div>
+        <div class="bar">
+          <div class="bar-fill ${stats.reportableCount >= DAC7_MAX_TRANSACTIONS ? 'exceeded' : stats.txProgressPct >= warnRatio * 100 ? 'warning' : ''}" style="width:${stats.txProgressPct}%"></div>
+        </div>
+      </div>
+      <div>
+        <div class="metric-row">
+          <span>Umsatz (DAC7)</span>
+          <strong>${formatEur(stats.reportableRevenue)} / ${formatEur(DAC7_MAX_REVENUE_EUR)}</strong>
+        </div>
+        <div class="bar">
+          <div class="bar-fill ${stats.reportableRevenue > DAC7_MAX_REVENUE_EUR ? 'exceeded' : stats.revenueProgressPct >= warnRatio * 100 ? 'warning' : ''}" style="width:${stats.revenueProgressPct}%"></div>
+        </div>
+      </div>
+      <div class="sub">
+        ${stats.nonReportableCount > 0 ? `+ ${stats.nonReportableCount} privat (${formatEur(stats.nonReportableRevenue)})` : `Noch ${stats.remainingTx} Verkäufe / ${formatEur(stats.remainingRevenue)} Luft`}
+      </div>
+    `;
+    els.platformCards.appendChild(card);
+  }
+}
+
+function renderTaxSummary() {
+  const warnRatio = state.settings?.warningRatio ?? 0.8;
+  const tax = calculateTaxSummary(state.sales, state.year, warnRatio);
+
+  els.totalRev.textContent = formatEur(tax.totalRevenue);
+  els.totalCount.textContent = `${tax.totalSalesCount} Verkäufe im Jahr ${state.year}`;
+  els.netProfit.textContent = `${tax.netProfitLoss > 0 ? '+' : ''}${formatEur(tax.netProfitLoss)}`;
+  els.costCoverage.textContent = `${tax.itemsWithCost} von ${tax.totalSalesCount} Artikeln mit Einkaufspreis`;
+  els.shortTermProfit.textContent = `${formatEur(tax.taxableShortTermProfit)} / ${formatEur(ESTG_PROFIT_EXEMPTION_EUR)}`;
+  els.estgBar.style.width = `${tax.profitProgressPct}%`;
+  els.estgBar.className = `bar-fill ${tax.status === 'ok' ? '' : tax.status}`;
+}
+
+function renderTable() {
+  let list = filterSalesByYear(state.sales, state.year);
+  if (state.platformFilter !== 'all') {
+    list = list.filter((s) => s.platform === state.platformFilter);
+  }
+  if (state.search) {
+    const q = state.search.toLowerCase();
+    list = list.filter(
+      (s) =>
+        (s.title || '').toLowerCase().includes(q) ||
+        (s.note || '').toLowerCase().includes(q)
+    );
+  }
+
+  list.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  els.salesBody.innerHTML = '';
+
+  if (list.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="8" style="text-align:center;color:#64748b;padding:24px;">Keine Verkäufe für diese Auswahl gefunden.</td>`;
+    els.salesBody.appendChild(tr);
+    return;
+  }
+
+  for (const sale of list) {
+    const tr = document.createElement('tr');
+    const hasBuy = sale.buyPrice !== null && sale.buyPrice !== undefined;
+    const diff = hasBuy ? Number(sale.sellPrice) - Number(sale.buyPrice) : null;
+    const reportable = isSaleReportable(sale);
+    const pName = PLATFORMS[sale.platform]?.name || sale.platform;
+    const pmName = PAYMENT_METHODS[sale.paymentMethod]?.label || sale.paymentMethod;
+
+    tr.innerHTML = `
+      <td style="white-space:nowrap;">${sale.date}</td>
+      <td>${pName}</td>
+      <td>
+        <div class="title-cell"></div>
+        <div class="note-line"></div>
+      </td>
+      <td class="num"><strong>${formatEur(sale.sellPrice)}</strong></td>
+      <td class="num">${hasBuy ? formatEur(sale.buyPrice) : '–'}</td>
+      <td class="num ${diff !== null ? (diff > 0 ? 'profit-pos' : 'profit-neg') : ''}">
+        ${diff !== null ? `${diff > 0 ? '+' : ''}${formatEur(diff)}` : '–'}
+      </td>
+      <td>
+        <span class="badge ${reportable ? 'warning' : 'ok'}">${reportable ? 'Ja' : 'Nein'}</span>
+      </td>
+      <td class="no-print action-cell">
+        <button class="edit-btn" title="Bearbeiten">✎</button>
+        <button class="del-btn" title="Löschen">×</button>
+      </td>
+    `;
+
+    tr.querySelector('.title-cell').textContent = sale.title;
+    const flags = [pmName];
+    if (sale.isEverydayItem !== false) flags.push('Hausrat');
+    if (sale.heldUnderOneYear) flags.push('< 1 Jahr');
+    if (sale.note) flags.push(sale.note);
+    tr.querySelector('.note-line').textContent = flags.join(' • ');
+
+    tr.querySelector('.edit-btn').addEventListener('click', () => {
+      openEditForm(sale);
+    });
+
+    tr.querySelector('.del-btn').addEventListener('click', async () => {
+      if (!window.confirm(`Verkauf „${sale.title}“ wirklich löschen?`)) return;
+      if (state.editingId === sale.id) resetAddForm();
+      state.sales = await deleteSale(sale.id);
+      render();
+    });
+
+    els.salesBody.appendChild(tr);
+  }
+}
+
+function render() {
+  els.printYear.textContent = String(state.year);
+  els.printDate.textContent = new Date().toLocaleDateString('de-DE');
+  renderPlatformCards();
+  renderTaxSummary();
+  renderTable();
+}
+
+function resetAddForm() {
+  state.editingId = null;
+  els.addForm.reset();
+  els.addForm.querySelector('input[name="date"]').value = getTodayIso();
+  els.addForm.querySelector('input[name="isEverydayItem"]').checked = true;
+  const plat = els.addForm.querySelector('select[name="platform"]');
+  const pm = els.addForm.querySelector('select[name="paymentMethod"]');
+  if (plat && pm) {
+    pm.value = plat.value === 'kleinanzeigen' ? 'cash' : 'platform';
+  }
+  const submitBtn = els.addForm.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.textContent = 'Verkauf speichern';
+  els.addForm.classList.add('hidden');
+}
+
+function openEditForm(sale) {
+  state.editingId = sale.id;
+  els.addForm.querySelector('select[name="platform"]').value = sale.platform;
+  els.addForm.querySelector('input[name="title"]').value = sale.title || '';
+  els.addForm.querySelector('input[name="date"]').value = sale.date || getTodayIso();
+  els.addForm.querySelector('input[name="sellPrice"]').value = String(sale.sellPrice ?? '');
+  els.addForm.querySelector('input[name="buyPrice"]').value =
+    sale.buyPrice !== null && sale.buyPrice !== undefined ? String(sale.buyPrice) : '';
+  els.addForm.querySelector('select[name="paymentMethod"]').value = sale.paymentMethod || 'platform';
+  els.addForm.querySelector('input[name="note"]').value = sale.note || '';
+  els.addForm.querySelector('input[name="isEverydayItem"]').checked = sale.isEverydayItem !== false;
+  els.addForm.querySelector('input[name="heldUnderOneYear"]').checked = Boolean(sale.heldUnderOneYear);
+  const submitBtn = els.addForm.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.textContent = 'Änderungen speichern';
+  els.addForm.classList.remove('hidden');
+  els.addForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function showMsg(text) {
+  els.settingsMsg.textContent = text;
+  setTimeout(() => {
+    if (els.settingsMsg.textContent === text) els.settingsMsg.textContent = '';
+  }, 4000);
+}
+
+async function init() {
+  const [sales, settings] = await Promise.all([getSales(), getSettings()]);
+  state.sales = sales;
+  state.settings = settings;
+
+  els.warnThresholdInput.value = String(Math.round((settings.warningRatio ?? 0.8) * 100));
+  els.showPillCheck.checked = settings.showFloatingPill !== false;
+  els.captureDeleteCheck.checked = settings.captureDeletePrompt !== false;
+
+  const dateInput = els.addForm.querySelector('input[name="date"]');
+  if (dateInput) dateInput.value = getTodayIso();
+  const addPlatformSelect = els.addForm.querySelector('select[name="platform"]');
+  const addPaymentSelect = els.addForm.querySelector('select[name="paymentMethod"]');
+  if (addPlatformSelect && addPaymentSelect) {
+    addPaymentSelect.value = addPlatformSelect.value === 'kleinanzeigen' ? 'cash' : 'platform';
+    addPlatformSelect.addEventListener('change', () => {
+      addPaymentSelect.value = addPlatformSelect.value === 'kleinanzeigen' ? 'cash' : 'platform';
+    });
+  }
+
+  populateYears();
+  render();
+
+  els.yearSelect.addEventListener('change', () => {
+    state.year = Number(els.yearSelect.value);
+    render();
+  });
+
+  els.searchInput.addEventListener('input', () => {
+    state.search = els.searchInput.value.trim();
+    renderTable();
+  });
+
+  els.platformFilter.addEventListener('change', () => {
+    state.platformFilter = els.platformFilter.value;
+    renderTable();
+  });
+
+  els.addNewBtn.addEventListener('click', () => {
+    if (state.editingId) {
+      resetAddForm();
+      els.addForm.classList.remove('hidden');
+    } else {
+      els.addForm.classList.toggle('hidden');
+    }
+  });
+
+  els.cancelFormBtn.addEventListener('click', () => {
+    resetAddForm();
+  });
+
+  els.addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(els.addForm);
+    const paymentMethod = String(fd.get('paymentMethod'));
+    const payload = {
+      platform: String(fd.get('platform')),
+      title: String(fd.get('title')).trim(),
+      date: String(fd.get('date')) || getTodayIso(),
+      sellPrice: Number.parseFloat(String(fd.get('sellPrice'))) || 0,
+      buyPrice: fd.get('buyPrice') ? Number.parseFloat(String(fd.get('buyPrice'))) : null,
+      paymentMethod,
+      reportable: paymentMethod === 'platform',
+      isEverydayItem: fd.get('isEverydayItem') === 'on',
+      heldUnderOneYear: fd.get('heldUnderOneYear') === 'on',
+      note: String(fd.get('note') || '').trim()
+    };
+
+    if (state.editingId) {
+      await updateSale(state.editingId, payload);
+      state.sales = await getSales();
+    } else {
+      const res = await addSale(payload);
+      state.sales = res.sales;
+    }
+
+    resetAddForm();
+    populateYears();
+    render();
+  });
+
+  els.csvBtn.addEventListener('click', () => {
+    const csv = buildCsv(state.sales, state.year);
+    triggerDownload(csv, `dac7-guard-${state.year}.csv`, 'text/csv;charset=utf-8');
+  });
+
+  els.printBtn.addEventListener('click', () => window.print());
+
+  // Settings listeners
+  const persistSettings = async () => {
+    const pct = Math.min(99, Math.max(50, Number(els.warnThresholdInput.value) || 80));
+    state.settings = await saveSettings({
+      warningRatio: pct / 100,
+      showFloatingPill: els.showPillCheck.checked,
+      captureDeletePrompt: els.captureDeleteCheck.checked
+    });
+    render();
+    showMsg('Einstellungen gespeichert.');
+  };
+
+  els.warnThresholdInput.addEventListener('change', persistSettings);
+  els.showPillCheck.addEventListener('change', persistSettings);
+  els.captureDeleteCheck.addEventListener('change', persistSettings);
+
+  els.jsonExportBtn.addEventListener('click', () => {
+    const json = buildJsonBackup(state.sales, state.settings);
+    triggerDownload(json, `dac7-guard-backup-${getTodayIso()}.json`, 'application/json');
+    showMsg('JSON-Backup heruntergeladen.');
+  });
+
+  els.jsonImportInput.addEventListener('change', async () => {
+    const file = els.jsonImportInput.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Datei ist größer als 5 MB.');
+      }
+      const text = await file.text();
+      const { sales } = parseJsonBackup(text);
+      const { addedCount } = await mergeImportedSales(sales);
+      state.sales = await getSales();
+      populateYears();
+      render();
+      showMsg(`${addedCount} Verkäufe erfolgreich importiert.`);
+    } catch (err) {
+      showMsg(`Import fehlgeschlagen: ${err.message}`);
+    } finally {
+      els.jsonImportInput.value = '';
+    }
+  });
+
+  els.clearAllBtn.addEventListener('click', async () => {
+    if (!window.confirm('Wirklich alle gespeicherten Verkäufe unwiderruflich löschen?')) return;
+    await clearAllSales();
+    state.sales = [];
+    render();
+    showMsg('Alle lokalen Daten gelöscht.');
+  });
+
+  chrome.storage.onChanged.addListener(async () => {
+    const [freshSales, freshSettings] = await Promise.all([getSales(), getSettings()]);
+    state.sales = freshSales;
+    state.settings = freshSettings;
+    els.warnThresholdInput.value = String(Math.round((freshSettings.warningRatio ?? 0.8) * 100));
+    els.showPillCheck.checked = freshSettings.showFloatingPill !== false;
+    els.captureDeleteCheck.checked = freshSettings.captureDeletePrompt !== false;
+    populateYears();
+    render();
+  });
+}
+
+init();

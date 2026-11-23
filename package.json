@@ -1,0 +1,23 @@
+{
+  "name": "dac7-guard",
+  "version": "0.1.0",
+  "description": "Open-Source Chrome Extension (Manifest V3) zum lokalen Tracking der DAC7 / PStTG-Meldegrenzen (30 Verkäufe / 2.000 €) und § 23 EStG Gewinngrenze für Kleinanzeigen, eBay & Vinted.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "icons": "node scripts/generate-icons.js",
+    "pack": "node scripts/pack.js"
+  },
+  "keywords": [
+    "chrome-extension",
+    "dac7",
+    "psttg",
+    "kleinanzeigen",
+    "ebay",
+    "vinted",
+    "finanzamt",
+    "privacy-first",
+    "open-source"
+  ]
+}

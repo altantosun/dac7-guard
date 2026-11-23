@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "DAC7 Guard – Verkaufs- & PStTG-Tracker",
+  "short_name": "DAC7 Guard",
+  "version": "0.1.0",
+  "description": "Behalte deine DAC7 / PStTG-Meldegrenzen (30 Verkäufe / 2.000 €) und § 23 EStG Gewinne auf Kleinanzeigen, eBay & Vinted im Blick – 100 % lokal & Open Source.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "DAC7 Guard – Verkaufs- & PStTG-Tracker",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "src/dashboard/dashboard.html",
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.kleinanzeigen.de/*"
+      ],
+      "js": [
+        "src/content/overlay-widget.js",
+        "src/content/kleinanzeigen.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.ebay.de/sh/ord*",
+        "https://www.ebay.de/mys/sold*",
+        "https://www.ebay.de/mys/home*"
+      ],
+      "js": [
+        "src/content/overlay-widget.js",
+        "src/content/ebay.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.vinted.de/my_orders*",
+        "https://www.vinted.de/member/*"
+      ],
+      "js": [
+        "src/content/overlay-widget.js",
+        "src/content/vinted.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
